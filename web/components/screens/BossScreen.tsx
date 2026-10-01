@@ -36,7 +36,7 @@ export function BossScreen({ onAnswer }: { onAnswer: () => void }) {
         >
           {decoy}
         </button>
-        <button className="boss-btn boss-claude" onClick={onAnswer}>
+        <button className="boss-btn boss-answer" onClick={onAnswer}>
           {answer}
         </button>
       </div>

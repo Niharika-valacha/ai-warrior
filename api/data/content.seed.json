@@ -940,12 +940,12 @@
     "Who made this quiz?",
     "Nope.",
     "Too slow!",
-    "Not today 🏃‍♀️",
+    "Not today 🏃",
     "Are you sure about that?",
     "Try the other one 😏"
    ],
-   "decoy": "Niharika",
-   "answer": "Claude"
+   "decoy": "Claude",
+   "answer": "Niharika"
   },
   "tree": {
    "title": "Your GenAI skill tree",

@@ -794,14 +794,14 @@ kbd {
   transition: left 0.18s ease-out, top 0.18s ease-out;
 }
 
-.boss-claude {
+.boss-answer {
   left: 72%;
   top: 50%;
   border-color: var(--accent);
   color: var(--accent);
 }
 
-.boss-claude:hover {
+.boss-answer:hover {
   box-shadow: 0 0 0 5px var(--accent-soft);
 }
 
