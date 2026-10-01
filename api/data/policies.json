@@ -1,0 +1,10 @@
+[
+  { "id": "2.1", "title": "Delivery times", "text": "Estimated delivery times are shown in the app. Delays caused by weather or traffic do not qualify for compensation." },
+  { "id": "3.1", "title": "Address changes", "text": "The delivery address can be changed until the rider picks up the order. After pickup, address changes are not possible." },
+  { "id": "4.1", "title": "Refund eligibility", "text": "Refunds are issued to the original payment method. Coupons and delivery fees are not refundable." },
+  { "id": "4.2", "title": "Refund window", "text": "A refund must be requested within 7 days of delivery. After 7 days, an order is no longer eligible for a refund." },
+  { "id": "4.5", "title": "Missing or damaged items", "text": "If an item is missing or damaged, we refund the price of that item. A photo may be requested for damaged items." },
+  { "id": "4.6", "title": "Large refunds", "text": "Any refund above ₹500 requires approval by a human support agent." },
+  { "id": "5.1", "title": "Cold food", "text": "If food arrives cold, the customer can receive a one-time 20% coupon for the next order. Cold food is not refunded in cash." },
+  { "id": "6.1", "title": "Coupons", "text": "Only one coupon can be applied per order. Coupons cannot be exchanged for cash." }
+]

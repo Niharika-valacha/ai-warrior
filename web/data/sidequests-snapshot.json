@@ -1,0 +1,2404 @@
+[
+ {
+  "levelId": 0,
+  "quest": {
+   "oneLiner": "Requirements gathering is writing down what a system must do, how well it must do it, and how you will check it.",
+   "story": {
+    "pain": "Teams started building features without clear goals, causing missed deadlines, cost overruns, and AI agents that gave wrong answers.",
+    "idea": "Write functional and non‑functional requirements up front and add a metric for acceptable AI accuracy before any code is written.",
+    "unlocked": "The team can build the FoodieGo support agent with known limits and measurable success criteria.",
+    "origin": "Requirements gathering is defined as the process of generating a list of functional and non‑functional requirements from stakeholders [4]."
+   },
+   "beforeAfter": [
+    {
+     "approach": "Ad‑hoc brainstorming",
+     "how": "Developers discuss ideas on a whiteboard and start coding immediately.",
+     "breaks": "Leads to vague scope, hidden assumptions, and hard‑to‑measure outcomes."
+    },
+    {
+     "approach": "User story sprint planning",
+     "how": "Product owners write user stories and the team estimates effort in story points.",
+     "breaks": "Stories often miss performance or cost constraints, and AI‑specific accuracy is not captured."
+    },
+    {
+     "approach": "Formal requirements gathering with AI accuracy clause",
+     "how": "Define functional requirements (e.g., answer order status, process refunds), non‑functional requirements (reply < 3 s, cost < ₹0.50 per chat, 80 % self‑resolution), and an accuracy threshold for the AI agent.",
+     "breaks": "Requires disciplined documentation and agreement but provides a clear testable target."
+    }
+   ],
+   "production": [
+    {
+     "title": "Validate order status query",
+     "text": "FoodieGo's AI must return the correct order status within 3 seconds for 95 % of queries; test harness checks latency and compares answer to the order database [4]."
+    },
+    {
+     "title": "Cost‑per‑chat monitoring",
+     "text": "Instrument the chat service to log token usage; ensure average cost stays below ₹0.50 per interaction, alerting if the model drift raises cost [6]."
+    },
+    {
+     "title": "Self‑resolution rate report",
+     "text": "Measure the percentage of chats closed without human hand‑off; aim for ≥ 80 % as defined in the non‑functional requirements [4]."
+    }
+   ],
+   "roles": {
+    "qa": [
+     "Write test cases that verify functional and non‑functional requirements.",
+     "Create scripts to measure latency and cost per chat."
+    ],
+    "frontend": [
+     "Display error messages when the AI fails the accuracy threshold.",
+     "Show latency indicators to the user."
+    ],
+    "backend": [
+     "Implement logging for cost and performance metrics.",
+     "Expose an endpoint for automated requirement validation."
+    ],
+    "leadership": [
+     "Approve the accuracy and cost thresholds before release.",
+     "Track requirement compliance in product dashboards."
+    ]
+   },
+   "tools": [
+    {
+     "group": "Capture",
+     "items": [
+      {
+       "name": "AI‑assisted doc editor",
+       "what": "Generates draft requirements from stakeholder interviews [6]"
+      },
+      {
+       "name": "Collaborative wiki",
+       "what": "Stores functional and non‑functional specs for all teams"
+      }
+     ]
+    },
+    {
+     "group": "Validate",
+     "items": [
+      {
+       "name": "Latency tester",
+       "what": "Measures response time of the FoodieGo agent"
+      },
+      {
+       "name": "Cost calculator",
+       "what": "Converts token usage to monetary cost"
+      },
+      {
+       "name": "Accuracy evaluator",
+       "what": "Runs a held‑out set of queries to compute AI correctness"
+      }
+     ]
+    }
+   ],
+   "atScale": {
+    "lead": "Prototyping a requirement list is easy; keeping the AI within those limits for millions of users is the real work.",
+    "ops": [
+     {
+      "name": "Monitoring",
+      "text": "Continuous tracking of latency, cost, and accuracy in production."
+     },
+     {
+      "name": "Alerting",
+      "text": "Automatic alerts when any metric breaches its threshold."
+     },
+     {
+      "name": "Retraining",
+      "text": "Periodic model updates to maintain the required accuracy."
+     },
+     {
+      "name": "Governance",
+      "text": "Review and adjust requirements as business goals evolve."
+     }
+    ],
+    "modelShare": 20,
+    "takeaway": "The model is only a fraction of the effort; most work is in defining, measuring, and enforcing the requirements."
+   }
+  },
+  "sources": [
+   {
+    "n": 1,
+    "title": "Requirements are All You Need: From Requirements to Code with LLMs",
+    "url": "https://arxiv.org/html/2406.10101v1"
+   },
+   {
+    "n": 2,
+    "title": "Challenges in applying large language models to requirements engineering tasks | Design Science | Cambridge Core",
+    "url": "https://www.cambridge.org/core/journals/design-science/article/challenges-in-applying-large-language-models-to-requirements-engineering-tasks/1FC7666F0A0B4E7091D2D4B2D46321B5"
+   },
+   {
+    "n": 3,
+    "title": "History of LLMs: Complete Timeline & Evolution (1950-2026)",
+    "url": "https://toloka.ai/blog/history-of-llms"
+   },
+   {
+    "n": 4,
+    "title": "What is Requirements Gathering? | Inflectra",
+    "url": "https://www.inflectra.com/Ideas/Topic/Requirements-Gathering.aspx"
+   },
+   {
+    "n": 5,
+    "title": "Formal requirements engineering and large language models: A two-way roadmap",
+    "url": "https://www.sciencedirect.com/science/article/pii/S0950584925000369"
+   },
+   {
+    "n": 6,
+    "title": "How AI is automating requirement gathering in 2024 | Edison Smart",
+    "url": "https://edisonsmart.com/how-ai-is-automating-requirement-gathering-in-2024"
+   },
+   {
+    "n": 7,
+    "title": "AI-Powered Requirements Gathering Services | Devox",
+    "url": "https://devoxsoftware.com/legacy-modernization/ai-solution-accelerator/ai-powered-requirements-gathering"
+   },
+   {
+    "n": 8,
+    "title": "How AI is Transforming Requirements Gathering and Documentation - Copilot4DevOps: AI-Powered Assistant for Azure DevOps",
+    "url": "https://copilot4devops.com/ai-in-requirements-gathering-and-documentation"
+   },
+   {
+    "n": 9,
+    "title": "5 Best AI Requirements Management & Gathering Tools in 2026: Complete List",
+    "url": "https://aqua-cloud.io/ai-tools-for-requirements-management"
+   },
+   {
+    "n": 10,
+    "title": "Can AI Write Better User Requirements? (Userdoc Demo & Guide)",
+    "url": "https://www.youtube.com/watch?v=yvJtG5Gji8A"
+   },
+   {
+    "n": 11,
+    "title": "A Comparison of Open Source LLM Frameworks for Pipelining",
+    "url": "https://winder.ai/comparison-open-source-llm-frameworks-pipelining"
+   },
+   {
+    "n": 12,
+    "title": "15 Best Open-Source RAG Frameworks in 2026",
+    "url": "https://www.firecrawl.dev/blog/best-open-source-rag-frameworks"
+   },
+   {
+    "n": 13,
+    "title": "🚨💥 Top 5 Trending Open-source LLM Tools & Frameworks You Must Know About ✨🚀 - DEV Community",
+    "url": "https://dev.to/guybuildingai/top-5-trending-open-source-llm-tools-frameworks-you-must-know-about-1fk7"
+   },
+   {
+    "n": 14,
+    "title": "Top LLM Frameworks for AI Application Development | Mirascope",
+    "url": "https://mirascope.com/blog/llm-frameworks"
+   },
+   {
+    "n": 15,
+    "title": "GitHub - tensorchord/Awesome-LLMOps: An awesome & curated list of best LLMOps tools for developers · GitHub",
+    "url": "https://github.com/tensorchord/Awesome-LLMOps"
+   },
+   {
+    "n": 16,
+    "title": "An Empirical Study on Challenges for LLM Application Developers",
+    "url": "https://arxiv.org/html/2408.05002v4"
+   },
+   {
+    "n": 17,
+    "title": "Best Practices for Building LLM Applications the Right Way!",
+    "url": "https://levelup.gitconnected.com/best-practices-for-building-llm-applications-the-right-way-d99d634e5fcc"
+   },
+   {
+    "n": 18,
+    "title": "Building LLM Applications for Production in 2024 | JFrog ML",
+    "url": "https://www.qwak.com/post/building-llm-applications-for-production"
+   },
+   {
+    "n": 19,
+    "title": "Engineering Practices for LLM Application Development",
+    "url": "https://martinfowler.com/articles/engineering-practices-llm.html"
+   },
+   {
+    "n": 20,
+    "title": "Evaluating Large Language Model (LLM) systems: Metrics, challenges, and best practices | by Jane Huang | Data Science + AI at Microsoft | Medium",
+    "url": "https://medium.com/data-science-at-microsoft/evaluating-llm-systems-metrics-challenges-and-best-practices-664ac25be7e5"
+   }
+  ],
+  "model": "openai/gpt-oss-120b",
+  "generatedAt": "2026-10-01T01:56:04+00:00"
+ },
+ {
+  "levelId": 1,
+  "quest": {
+   "oneLiner": "A Stateless LLM API is like a REST endpoint: each call carries the whole conversation and the model forgets everything after responding.",
+   "story": {
+    "pain": "Developers had to store chat state inside the model, causing leaks, scaling limits, and privacy risks.",
+    "idea": "Make the API stateless and let the backend keep the full message list and send it every time.",
+    "unlocked": "Now you can scale horizontally, audit logs, and control context precisely.",
+    "origin": "Statelessness of LLMs is described in multiple sources, e.g., the model discards all computation after each call [2] and the REST‑style API model is explained in an AI model guide [8]."
+   },
+   "beforeAfter": [
+    {
+     "approach": "Server‑side session storage",
+     "how": "The LLM service keeps a session ID and stores prior messages on the provider side.",
+     "breaks": "Limits parallelism, can mix user data, and makes privacy compliance hard [3][1]."
+    },
+    {
+     "approach": "Client‑side token cache",
+     "how": "The front‑end bundles recent messages in a cookie or local storage and sends only new tokens.",
+     "breaks": "Runs into token limits quickly, forces frequent truncation, and loses control over what the model sees [5]."
+    },
+    {
+     "approach": "Stateless LLM API",
+     "how": "Each request contains a full \"messages\" array. The backend trims or summarizes to fit the model's context window and pays per token each time.",
+     "breaks": "Costs rise with conversation length because every turn repeats earlier tokens [1][5]."
+    }
+   ],
+   "production": [
+    {
+     "title": "FoodieGo order help",
+     "text": "When a user asks, \"Where is my order?\", the backend adds the new query to the full chat history, trims to the last 4 k tokens, and calls the LLM. The model replies with a personalized status update. This works at scale because each call is independent [2][8]."
+    },
+    {
+     "title": "Menu recommendation",
+     "text": "FoodieGo asks the model to suggest dishes based on prior user preferences. The backend builds a context that includes the user's past likes, summarises older likes, and sends the whole array. The stateless call returns a ranked list without any hidden state on the model side [4]."
+    },
+    {
+     "title": "Support ticket triage",
+     "text": "Support agents submit a ticket text. The backend prepends the latest ticket and a short system prompt, then calls the LLM to classify urgency. Because the API is stateless, the classification logic lives entirely in the service, ensuring auditability and privacy [3]."
+    }
+   ],
+   "roles": {
+    "qa": [
+     "Verify that the message array respects the token limit.",
+     "Check that truncation does not drop required context."
+    ],
+    "frontend": [
+     "Collect user input and send it as a new entry in the messages list.",
+     "Show token usage to avoid surprise costs."
+    ],
+    "backend": [
+     "Store full conversation history in a database.",
+     "Summarize or prune old messages to fit the model's context window."
+    ],
+    "leadership": [
+     "Track per‑message cost and set budget alerts.",
+     "Define policies for how long conversation history is retained."
+    ]
+   },
+   "tools": [
+    {
+     "group": "Build it",
+     "items": [
+      {
+       "name": "FastAPI",
+       "what": "Expose an endpoint that receives a new user message, fetches history, and calls the LLM."
+      },
+      {
+       "name": "PostgreSQL + pgvector",
+       "what": "Store message history and enable vector search for retrieval‑augmented context."
+      }
+     ]
+    },
+    {
+     "group": "Test it",
+     "items": [
+      {
+       "name": "Postman",
+       "what": "Validate that the full messages array is sent correctly and that token counts match expectations."
+      },
+      {
+       "name": "Locust",
+       "what": "Load‑test the stateless endpoint to verify horizontal scaling."
+      }
+     ]
+    },
+    {
+     "group": "Connect it",
+     "items": [
+      {
+       "name": "OpenAI compatible LLM API",
+       "what": "Provides the stateless inference endpoint that reads the messages array."
+      },
+      {
+       "name": "Auth0",
+       "what": "Manages API keys and rate‑limit per client."
+      }
+     ]
+    }
+   ],
+   "atScale": {
+    "lead": "A demo can be built in a day, but production requires robust history storage, token budgeting, and observability.",
+    "ops": [
+     {
+      "name": "Latency",
+      "text": "Each call must wait for the full context to be assembled and sent."
+     },
+     {
+      "name": "Cost",
+      "text": "Token count grows with conversation length; need monitoring."
+     },
+     {
+      "name": "Freshness",
+      "text": "Backend must keep the latest data (e.g., order status) in the context."
+     },
+     {
+      "name": "Observability",
+      "text": "Log request/response pairs for debugging and compliance."
+     }
+    ],
+    "modelShare": 20,
+    "takeaway": "Most of the work is engineering the surrounding system—storage, trimming, security, and cost control."
+   }
+  },
+  "sources": [
+   {
+    "n": 1,
+    "title": "LLMs are stateless. Each msg you send is a fresh start - even if it's in a thread.",
+    "url": "https://nityesh.com/llms-are-stateless-each-msg-you-send-is-a-fresh-start-even-if-its-in-a-thread"
+   },
+   {
+    "n": 2,
+    "title": "Are LLMs Stateless? Architecture, Implications and Solutions",
+    "url": "https://atlan.com/know/are-llms-stateless"
+   },
+   {
+    "n": 3,
+    "title": "Why Stateless LLMs Are the Best Choice for Secure Data Extraction | Adlib News",
+    "url": "https://www.adlibsoftware.com/news/why-stateless-llms-are-the-best-choice-for-secure-data-extraction"
+   },
+   {
+    "n": 4,
+    "title": "LLMs Are Stateless. Context Is the Product",
+    "url": "https://medium.com/genai-llms/llms-are-stateless-context-is-the-product-336c50ae637c"
+   },
+   {
+    "n": 5,
+    "title": "stateless llm | Yuma",
+    "url": "https://www.weareyuma.com/en/insights/research/mastering-state-stateless-llms"
+   },
+   {
+    "n": 6,
+    "title": "LLM APIs: Use Cases,Tools, & Best Practices for 2026",
+    "url": "https://orq.ai/blog/llm-api-use-cases"
+   },
+   {
+    "n": 7,
+    "title": "Designing APIs for LLM Apps: Build Scalable and AI-Ready Interfaces",
+    "url": "https://www.gravitee.io/blog/designing-apis-for-llm-apps"
+   },
+   {
+    "n": 8,
+    "title": "REST API for AI Models Explained: 2026 Guide | MLflow",
+    "url": "https://mlflow.org/articles/rest-api-for-ai-models-explained-2026-guide"
+   },
+   {
+    "n": 9,
+    "title": "Stateless LLMs",
+    "url": "https://medium.com/@kandaanusha/stateless-llms-27281a7e2056"
+   },
+   {
+    "n": 10,
+    "title": "A Comparison of Open Source LLM Frameworks for Pipelining",
+    "url": "https://winder.ai/comparison-open-source-llm-frameworks-pipelining"
+   },
+   {
+    "n": 11,
+    "title": "A tour of popular open source frameworks for LLM-powered agents",
+    "url": "https://www.dataiku.com/blog/open-source-frameworks-for-llm-powered-agents"
+   },
+   {
+    "n": 12,
+    "title": "GitHub - tensorchord/Awesome-LLMOps: An awesome & curated list of best LLMOps tools for developers · GitHub",
+    "url": "https://github.com/tensorchord/Awesome-LLMOps"
+   },
+   {
+    "n": 13,
+    "title": "Top 7 LLM Frameworks 2026 | Redwerk",
+    "url": "https://redwerk.com/blog/top-llm-frameworks"
+   },
+   {
+    "n": 14,
+    "title": "Medium",
+    "url": "https://billtcheng2013.medium.com/large-language-model-programming-frameworks-part-1-269b3952a205"
+   },
+   {
+    "n": 15,
+    "title": "LLM APIs: Tips for Bridging the Gap | IBM",
+    "url": "https://www.ibm.com/think/insights/llm-apis"
+   },
+   {
+    "n": 16,
+    "title": "The LLM-API Challenge (and Opportunity)",
+    "url": "https://www.srao.blog/p/the-llm-api-challenge-and-opportunity"
+   }
+  ],
+  "model": "openai/gpt-oss-120b",
+  "generatedAt": "2026-10-01T01:58:25+00:00"
+ },
+ {
+  "levelId": 2,
+  "quest": {
+   "oneLiner": "A system prompt is a fixed set of instructions written by developers that tells the model how to act before any user query arrives.",
+   "story": {
+    "pain": "Early chatbots answered anything in a generic way, often giving the wrong tone or revealing internal logic, and they were vulnerable to prompt injection.",
+    "idea": "Add a developer‑controlled system prompt that defines role, tone, scope, and hard rules for every conversation.",
+    "unlocked": "The AI can now stay on brand, follow safety rules, and handle edge cases reliably, making it suitable for production support.",
+    "origin": "System prompts were described as the instructional layer of LLMs in the AI Context Engineering Bootcamp [3] and highlighted as essential for production AI apps by multiple guides [4][6][7]."
+   },
+   "beforeAfter": [
+    {
+     "approach": "No system prompt",
+     "how": "Send only the user query to the model and rely on its default behavior.",
+     "breaks": "Model may ignore needed constraints, give inconsistent tone, and be easy to hijack."
+    },
+    {
+     "approach": "Hard‑code rules in application code",
+     "how": "Write if‑else logic around model outputs to enforce policies.",
+     "breaks": "Rules are brittle, hard to update, and cannot influence the model’s internal generation."
+    },
+    {
+     "approach": "System prompt",
+     "how": "Provide a fixed instruction block (role, tone, scope, hard rules) as part of every request.",
+     "breaks": "A clever user can still try to override it, and the prompt must be carefully crafted to avoid ambiguity."
+    }
+   ],
+   "production": [
+    {
+     "title": "Consistent brand voice",
+     "text": "FoodieGo’s AI support agent always replies in a friendly, casual tone and mentions the company name, thanks to a system prompt that sets the role and tone [4][6]."
+    },
+    {
+     "title": "Escalation handling",
+     "text": "The system prompt instructs the agent to hand off to a human when it cannot answer a delivery question, reducing user frustration [8]."
+    },
+    {
+     "title": "Prompt‑injection defense",
+     "text": "Defensive instructions in the system prompt tell the model to ignore attempts to change its behavior, protecting the service from malicious inputs [4][8]."
+    }
+   ],
+   "roles": {
+    "qa": [
+     "Verify that the system prompt produces the expected tone in test conversations.",
+     "Check that edge‑case inputs do not bypass hard rules."
+    ],
+    "frontend": [
+     "Display the agent’s messages knowing they follow the defined style.",
+     "Pass user text unchanged to the backend; do not add extra prompts."
+    ],
+    "backend": [
+     "Store and version the system prompt alongside code.",
+     "Log model responses to monitor compliance with the prompt."
+    ],
+    "leadership": [
+     "Allocate budget for prompt‑management tooling.",
+     "Set policy on prompt review cycles to keep tone and rules up to date."
+    ]
+   },
+   "tools": [
+    {
+     "group": "Prompt Management",
+     "items": [
+      {
+       "name": "PromptLayer",
+       "what": "Version, test, and monitor system prompts in production."
+      },
+      {
+       "name": "PromptFoundry",
+       "what": "Collaborative editing and validation of prompt files."
+      }
+     ]
+    },
+    {
+     "group": "LLM Frameworks",
+     "items": [
+      {
+       "name": "LangChain",
+       "what": "Inject the system prompt into every chain call automatically."
+      },
+      {
+       "name": "Guidance",
+       "what": "Build dynamic system prompts with conditionals."
+      }
+     ]
+    },
+    {
+     "group": "Observability",
+     "items": [
+      {
+       "name": "OpenTelemetry",
+       "what": "Track latency and error rates of prompt‑driven requests."
+      },
+      {
+       "name": "Prometheus",
+       "what": "Alert on spikes that may indicate prompt‑injection attempts."
+      }
+     ]
+    }
+   ],
+   "atScale": {
+    "lead": "A demo with a static system prompt is easy, but running it for millions of users requires robust prompt versioning, monitoring, and security.",
+    "ops": [
+     {
+      "name": "Prompt Design",
+      "text": "Write clear, specific role and rule statements."
+     },
+     {
+      "name": "Versioning",
+      "text": "Track changes and roll back if a new prompt breaks behavior."
+     },
+     {
+      "name": "Monitoring",
+      "text": "Collect metrics on compliance and injection attempts."
+     },
+     {
+      "name": "Security",
+      "text": "Enforce immutable system prompts and sanitize user input."
+     },
+     {
+      "name": "Latency",
+      "text": "Ensure the prompt size does not add noticeable delay."
+     },
+     {
+      "name": "Scaling",
+      "text": "Cache the prompt with the model instance to avoid repeated loading."
+     }
+    ],
+    "modelShare": 22,
+    "takeaway": "Most of the work is building the surrounding engineering around the prompt, not the model itself."
+   }
+  },
+  "sources": [
+   {
+    "n": 1,
+    "title": "Large Language Models: What is prompt engineering? — Praelexis AI Blog",
+    "url": "https://www.praelexis.com/blog/system-vs-user-prompts"
+   },
+   {
+    "n": 2,
+    "title": "Prompt engineering - Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Prompt_engineering"
+   },
+   {
+    "n": 3,
+    "title": "The instructional layer (system prompts) | LLM context engineering bootcamp | Lecture 2",
+    "url": "https://www.youtube.com/watch?v=HvBCcmzS_vs"
+   },
+   {
+    "n": 4,
+    "title": "System Prompts vs User Prompts: Design Patterns for LLM Apps",
+    "url": "https://tetrate.io/learn/ai/system-prompts-vs-user-prompts"
+   },
+   {
+    "n": 5,
+    "title": "What Is Prompt Engineering?",
+    "url": "https://www.oracle.com/artificial-intelligence/prompt-engineering"
+   },
+   {
+    "n": 6,
+    "title": "System Prompts: Design Patterns and Best Practices",
+    "url": "https://tetrate.io/learn/ai/system-prompts-guide"
+   },
+   {
+    "n": 7,
+    "title": "The Importance of System Prompts in Shaping AI Agent Responses",
+    "url": "https://www.getmaxim.ai/articles/the-importance-of-system-prompts-in-shaping-ai-agent-responses"
+   },
+   {
+    "n": 8,
+    "title": "System Prompts Explained → What They Are, How They Work, and How to Write Them Properly",
+    "url": "https://medium.com/@adityaa9971/system-prompts-explained-what-they-are-how-they-work-and-how-to-write-them-properly-d91e3f611046"
+   },
+   {
+    "n": 9,
+    "title": "System Prompts and AI Tools: Essential Insights for Developers and AI Teams",
+    "url": "https://blog.promptlayer.com/system-prompts-and-ai-tools-key-takeaways-and-insight"
+   },
+   {
+    "n": 10,
+    "title": "What We Learned Building a Prompt Management System — Agenta Blog",
+    "url": "https://agenta.ai/blog/what-we-learned-building-a-prompt-management-system"
+   },
+   {
+    "n": 11,
+    "title": "🚨💥 Top 5 Trending Open-source LLM Tools & Frameworks You Must Know About ✨🚀 - DEV Community",
+    "url": "https://dev.to/guybuildingai/top-5-trending-open-source-llm-tools-frameworks-you-must-know-about-1fk7"
+   },
+   {
+    "n": 12,
+    "title": "Top LLM Frameworks for AI Application Development | Mirascope",
+    "url": "https://mirascope.com/blog/llm-frameworks"
+   },
+   {
+    "n": 13,
+    "title": "GitHub - tensorchord/Awesome-LLMOps: An awesome & curated list of best LLMOps tools for developers · GitHub",
+    "url": "https://github.com/tensorchord/Awesome-LLMOps"
+   },
+   {
+    "n": 14,
+    "title": "A Comparison of Open Source LLM Frameworks for Pipelining",
+    "url": "https://winder.ai/comparison-open-source-llm-frameworks-pipelining"
+   },
+   {
+    "n": 15,
+    "title": "Prompt-Engineering for Open-Source LLMs",
+    "url": "https://www.youtube.com/watch?v=f32dc5M2Mn0"
+   },
+   {
+    "n": 16,
+    "title": "Medium",
+    "url": "https://medium.com/@kuldeep.paul08/llm-prompt-management-tools-a-comprehensive-guide-for-production-ai-systems-a7695768ca2d"
+   },
+   {
+    "n": 17,
+    "title": "Prompt Engineering Best Practices: Building Reliable LLM Systems With Evaluation Frameworks",
+    "url": "https://www.supercharge.io/blog/ai-prompt-engineering-best-practices"
+   },
+   {
+    "n": 18,
+    "title": "AI Prompt Engineering Best Practices 2026 | ARTJOKER",
+    "url": "https://artjoker.net/blog/ai-prompt-engineering-best-practices"
+   }
+  ],
+  "model": "openai/gpt-oss-120b",
+  "generatedAt": "2026-10-01T01:59:37+00:00"
+ },
+ {
+  "levelId": 3,
+  "quest": {
+   "oneLiner": "Structured output forces the model to return data that matches a JSON schema, so your code can rely on the shape of the response.",
+   "story": {
+    "pain": "LLM replies are free‑form text. Teams spend time parsing, validating, and fixing broken formats, which adds bugs and cost.",
+    "idea": "Define a JSON schema and let the model API enforce it; the model must emit valid JSON or it is rejected.",
+    "unlocked": "Applications can consume model data directly without fragile post‑processing, enabling reliable agents like FoodieGo’s AI support.",
+    "origin": "OpenAI and Google introduced schema‑enforced outputs to solve the unpredictability of free‑form replies [1][4][8]."
+   },
+   "beforeAfter": [
+    {
+     "approach": "Regex parsing",
+     "how": "Run a regular expression on the model's raw text to extract fields.",
+     "breaks": "Regex is brittle, fails on any variation, and requires constant updates."
+    },
+    {
+     "approach": "Post‑hoc validation",
+     "how": "Generate free text, then parse with a JSON parser and catch errors.",
+     "breaks": "Most calls fail validation, causing retries and latency spikes."
+    },
+    {
+     "approach": "Structured output (JSON Schema enforcement)",
+     "how": "Define a JSON schema in the request; the API only returns responses that conform.",
+     "breaks": "If the schema is too strict, the model may refuse to answer, so design schemas with reasonable defaults."
+    }
+   ],
+   "production": [
+    {
+     "title": "Order status lookup",
+     "text": "FoodieGo’s assistant receives a user query and returns {orderId:string, status:string, eta:number} validated by the schema, letting the frontend render instantly [2][4]."
+    },
+    {
+     "title": "Restaurant recommendation",
+     "text": "The model returns a list of restaurant objects (name, cuisine, rating) that matches the schema, so the backend can store them without extra cleaning [1][7]."
+    },
+    {
+     "title": "Support ticket triage",
+     "text": "AI extracts ticket fields (category, priority, description) into a schema‑compliant JSON that feeds directly into the ticketing system, eliminating manual entry [6][9]."
+    }
+   ],
+   "roles": {
+    "qa": [
+     "Write schema‑based contract tests.",
+     "Verify that every API call returns valid JSON."
+    ],
+    "frontend": [
+     "Consume the exact fields without defensive checks.",
+     "Display data instantly, trusting the shape."
+    ],
+    "backend": [
+     "Define schemas once and reuse across services.",
+     "Log schema violations as alerts."
+    ],
+    "leadership": [
+     "Allocate budget for schema design instead of ad‑hoc parsing tools.",
+     "Set reliability KPIs based on schema compliance."
+    ]
+   },
+   "tools": [
+    {
+     "group": "Define",
+     "items": [
+      {
+       "name": "JSON Schema",
+       "what": "A declarative description of required fields and types."
+      },
+      {
+       "name": "OpenAI API",
+       "what": "Supports passing a schema so the model validates output."
+      }
+     ]
+    },
+    {
+     "group": "Validate",
+     "items": [
+      {
+       "name": "ajv",
+       "what": "Fast JSON schema validator used in Node services."
+      },
+      {
+       "name": "pydantic",
+       "what": "Python library that enforces schemas on incoming data."
+      }
+     ]
+    }
+   ],
+   "atScale": {
+    "lead": "Demoing a schema‑enforced call is trivial; keeping it reliable for millions of users requires robust tooling and monitoring.",
+    "ops": [
+     {
+      "name": "Schema design",
+      "text": "Create and version JSON schemas for each model endpoint."
+     },
+     {
+      "name": "Validation layer",
+      "text": "Add runtime validators to catch any non‑conforming responses."
+     },
+     {
+      "name": "Monitoring",
+      "text": "Track schema violation rates and alert on spikes."
+     },
+     {
+      "name": "Retry logic",
+      "text": "Gracefully fallback when the model rejects a request."
+     }
+    ],
+    "modelShare": 20,
+    "takeaway": "Most of the work is engineering the contracts, validation, and observability, not the model itself."
+   }
+  },
+  "sources": [
+   {
+    "n": 1,
+    "title": "Structured Outputs: Everything You Should Know",
+    "url": "https://humanloop.com/blog/structured-outputs"
+   },
+   {
+    "n": 2,
+    "title": "Getting Structured LLM Output - DeepLearning.AI",
+    "url": "https://www.deeplearning.ai/courses/getting-structured-llm-output"
+   },
+   {
+    "n": 3,
+    "title": "Learn structured output techniques for LLMs | Andrew Ng ...",
+    "url": "https://www.linkedin.com/posts/andrewyng_new-short-course-getting-structured-llm-activity-7313238215203725312-0mlo"
+   },
+   {
+    "n": 4,
+    "title": "The guide to structured outputs and function calling with LLMs — Agenta Blog",
+    "url": "https://agenta.ai/blog/the-guide-to-structured-outputs-and-function-calling-with-llms"
+   },
+   {
+    "n": 5,
+    "title": "Empirical Study for Structured Output Control in LLMs for Software Engineering",
+    "url": "https://arxiv.org/html/2606.09395v1"
+   },
+   {
+    "n": 6,
+    "title": "Structured Outputs: Extract validated data from voice AI calls - Vapi AI Blog",
+    "url": "https://vapi.ai/blog/structured-outputs"
+   },
+   {
+    "n": 7,
+    "title": "Accelerating Digital Transformation with Structured AI Outputs - GlobalLogic",
+    "url": "https://www.globallogic.com/insights/blogs/accelerating-digital-transformation-with-structured-ai-outputs"
+   },
+   {
+    "n": 8,
+    "title": "Introducing Structured Outputs in the API | OpenAI",
+    "url": "https://openai.com/index/introducing-structured-outputs-in-the-api"
+   },
+   {
+    "n": 9,
+    "title": "What is Structured Data Output?",
+    "url": "https://www.llamaindex.ai/glossary/structured-data-output"
+   },
+   {
+    "n": 10,
+    "title": "Open-Source NLP Libraries & Frameworks - ESP on CB Insights",
+    "url": "https://www.cbinsights.com/esp/enterprise-tech/development/open-source-nlp-libraries-&-frameworks"
+   },
+   {
+    "n": 11,
+    "title": "Open-Source NLP Libraries & Frameworks - ESP on CB Insights",
+    "url": "https://www.cbinsights.com/esp/enterprise-tech/bi-&-operational-intelligence/open-source-nlp-libraries-&-frameworks"
+   },
+   {
+    "n": 12,
+    "title": "LLM.co Releases Study on the Growth of Open Source vs. Closed Source LLM Adoption | Markets Insider",
+    "url": "https://markets.businessinsider.com/news/stocks/llm-co-releases-study-on-the-growth-of-open-source-vs-closed-source-llm-adoption-1035921230"
+   },
+   {
+    "n": 13,
+    "title": "Structured — Daily Planner",
+    "url": "https://structured.app"
+   },
+   {
+    "n": 14,
+    "title": "Partner Marketing Automation Platform (PMAP) | Structured",
+    "url": "https://structured.ai"
+   },
+   {
+    "n": 15,
+    "title": "Advanced structured Output -Use case: accident research - API - OpenAI Developer Community",
+    "url": "https://community.openai.com/t/advanced-structured-output-use-case-accident-research/663005"
+   }
+  ],
+  "model": "openai/gpt-oss-120b",
+  "generatedAt": "2026-10-01T02:51:55+00:00"
+ },
+ {
+  "levelId": 4,
+  "quest": {
+   "oneLiner": "RAG lets an AI look up current documents at query time instead of memorising them.",
+   "story": {
+    "pain": "LLMs often answer from stale training data and can hallucinate, which broke trust in support bots.",
+    "idea": "Combine the model with a searchable knowledge base: split docs, embed them, query the index for each user question, and feed the result to the model.",
+    "unlocked": "Support agents can give up‑to‑date answers with source citations without retraining the model.",
+    "origin": "The term Retrieval‑Augmented Generation was coined in a 2020 paper describing a hybrid of a parametric model and external memory [1][3]."
+   },
+   "beforeAfter": [
+    {
+     "approach": "Static fine‑tuning",
+     "how": "Train the LLM on a snapshot of policies so it can answer from memory.",
+     "breaks": "Every policy change requires costly retraining; the model still hallucinates on rare topics."
+    },
+    {
+     "approach": "Prompt engineering with few‑shot examples",
+     "how": "Provide the model with example Q&A pairs in the prompt to steer answers.",
+     "breaks": "Prompt length is limited; examples become outdated quickly and cannot cover all policies."
+    },
+    {
+     "approach": "RAG",
+     "how": "Chunk policy docs, embed chunks, store in a vector DB, retrieve relevant chunks per query, and generate an answer with citations.",
+     "breaks": "Requires building and maintaining the retrieval pipeline, but avoids retraining."
+    }
+   ],
+   "production": [
+    {
+     "title": "Customer support for FoodieGo",
+     "text": "When a rider asks why a restaurant was cancelled, the AI pulls the latest cancellation policy from the internal docs and replies with a citation, keeping answers fresh without model updates [5][8]."
+    },
+    {
+     "title": "Internal knowledge base",
+     "text": "Engineers query the RAG bot for deployment guidelines; it retrieves the current CI/CD playbook and cites the exact section, reducing time spent searching [4][7]."
+    },
+    {
+     "title": "Policy compliance checks",
+     "text": "The bot checks a new promotion against the latest pricing rules by retrieving the rule set and confirming compliance, avoiding manual audits [2][9]."
+    }
+   ],
+   "roles": {
+    "qa": [
+     "Create test cases that verify citations match retrieved chunks.",
+     "Monitor hallucination rates before and after RAG rollout."
+    ],
+    "frontend": [
+     "Display retrieved citations alongside answers.",
+     "Show a loading indicator while the retrieval step runs."
+    ],
+    "backend": [
+     "Implement chunking, embedding, and vector store queries.",
+     "Add fallback to plain LLM if retrieval fails."
+    ],
+    "leadership": [
+     "Track cost savings from not retraining models.",
+     "Set policy for how often docs are re‑ingested."
+    ]
+   },
+   "tools": [
+    {
+     "group": "Build it",
+     "items": [
+      {
+       "name": "Haystack",
+       "what": "Orchestrates chunking, embedding, retrieval, and generation pipelines."
+      },
+      {
+       "name": "LlamaIndex",
+       "what": "Provides connectors for many document types and builds the query engine."
+      }
+     ]
+    },
+    {
+     "group": "Store it",
+     "items": [
+      {
+       "name": "Pinecone",
+       "what": "Managed vector database for fast similarity search."
+      },
+      {
+       "name": "Weaviate",
+       "what": "Open‑source vector store with built‑in hybrid search."
+      }
+     ]
+    },
+    {
+     "group": "Connect it",
+     "items": [
+      {
+       "name": "OpenAI GPT‑4 (or Gemini)",
+       "what": "Generative model that consumes the retrieved context."
+      },
+      {
+       "name": "Embedding model (e.g., MiniLM)",
+       "what": "Creates vector representations of document chunks."
+      }
+     ]
+    }
+   ],
+   "atScale": {
+    "lead": "A demo can be built in a day, but production needs a robust ingestion pipeline, monitoring, and security.",
+    "ops": [
+     {
+      "name": "Freshness",
+      "text": "Schedule regular re‑indexing of docs to keep citations current."
+     },
+     {
+      "name": "Latency",
+      "text": "Cache frequent queries and optimise vector DB sharding."
+     },
+     {
+      "name": "Security",
+      "text": "Encrypt stored embeddings and restrict query access."
+     },
+     {
+      "name": "Observability",
+      "text": "Log retrieval scores and citation usage for debugging."
+     }
+    ],
+    "modelShare": 20,
+    "takeaway": "Most effort is in data pipelines, storage, and ops; the model itself is just one component."
+   }
+  },
+  "sources": [
+   {
+    "n": 1,
+    "title": "Retrieval-augmented generation - Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Retrieval-augmented_generation"
+   },
+   {
+    "n": 2,
+    "title": "Beyond the Prompt: The Definitive Engineering Guide to Retrieval-Augmented Generation (RAG)",
+    "url": "https://medium.com/@xiaxiami/beyond-the-prompt-the-definitive-engineering-guide-to-retrieval-augmented-generation-rag-8e87c6d7433d"
+   },
+   {
+    "n": 3,
+    "title": "What is Retrieval-Augmented Generation (RAG)? A Practical Guide",
+    "url": "https://www.k2view.com/what-is-retrieval-augmented-generation"
+   },
+   {
+    "n": 4,
+    "title": "What is RAG (Retrieval-Augmented Generation)?",
+    "url": "https://aws.amazon.com/what-is/retrieval-augmented-generation"
+   },
+   {
+    "n": 5,
+    "title": "What is Retrieval Augmented Generation (RAG)? | Databricks",
+    "url": "https://www.databricks.com/blog/what-is-retrieval-augmented-generation"
+   },
+   {
+    "n": 6,
+    "title": "Robust Intelligence Partners With Pinecone to Secure Retrieval-Augmented Generation (RAG) AI Applications",
+    "url": "https://finance.yahoo.com/news/robust-intelligence-partners-pinecone-secure-000000911.html"
+   },
+   {
+    "n": 7,
+    "title": "What is RAG (Retrieval Augmented Generation)? | IBM",
+    "url": "https://www.ibm.com/think/topics/retrieval-augmented-generation"
+   },
+   {
+    "n": 8,
+    "title": "10 RAG examples and use cases from real companies",
+    "url": "https://www.evidentlyai.com/blog/rag-examples"
+   },
+   {
+    "n": 9,
+    "title": "Retrieval-augmented generation (RAG) for business: Full guide | Meilisearch",
+    "url": "https://www.meilisearch.com/blog/rag-for-business"
+   },
+   {
+    "n": 10,
+    "title": "Best AI Consulting Companies for RAG Development (2026) | Keyhole Software",
+    "url": "https://keyholesoftware.com/best-ai-consulting-companies-rag-development"
+   },
+   {
+    "n": 11,
+    "title": "7 AI Open Source Libraries To Build RAG, Agents & AI Search - DEV Community",
+    "url": "https://dev.to/vectorpodcast/7-ai-open-source-libraries-to-build-rag-agents-ai-search-27bm?bb=192032"
+   },
+   {
+    "n": 12,
+    "title": "15 Best Open-Source RAG Frameworks in 2026",
+    "url": "https://www.firecrawl.dev/blog/best-open-source-rag-frameworks"
+   },
+   {
+    "n": 13,
+    "title": "Best Open Source RAG Frameworks in 2026: Comparison and Guide",
+    "url": "https://www.olostep.com/blog/open-source-rag-frameworks"
+   },
+   {
+    "n": 14,
+    "title": "Best Open-Source RAG Frameworks in 2026: Licenses Compared",
+    "url": "https://www.turingpost.com/p/rag-tools"
+   },
+   {
+    "n": 15,
+    "title": "GitHub - infiniflow/ragflow: RAGFlow is a leading open-source Retrieval-Augmented Generation (RAG) engine that fuses cutting-edge RAG with Agent capabilities to create a superior context layer for LLMs · GitHub",
+    "url": "https://github.com/infiniflow/ragflow"
+   },
+   {
+    "n": 16,
+    "title": "RAG Use Cases for Developers | Software Development Companies",
+    "url": "https://www.microsoft.com/en-us/software-development-companies/resources/articles/rag-use-cases-for-developers"
+   },
+   {
+    "n": 17,
+    "title": "12 RAG framework challenges for effective LLM applications",
+    "url": "https://datasciencedojo.com/blog/rag-framework-challenges-in-llm"
+   },
+   {
+    "n": 18,
+    "title": "The Architect's Guide to Production RAG: Navigating Challenges and Building Scalable AI",
+    "url": "https://www.ragie.ai/blog/the-architects-guide-to-production-rag-navigating-challenges-and-building-scalable-ai"
+   },
+   {
+    "n": 19,
+    "title": "Best Practices for Scaling Complex Multi-User Enterprise RAG AI Systems: A Comprehensive Guide to…",
+    "url": "https://medium.com/@wmechem/best-practices-for-scaling-complex-multi-user-enterprise-rag-ai-systems-a-comprehensive-guide-to-8754c998c7b9"
+   },
+   {
+    "n": 20,
+    "title": "RAG Problems Persist. Here Are Five Ways to Fix Them | IBM",
+    "url": "https://www.ibm.com/think/insights/rag-problems-five-ways-to-fix"
+   }
+  ],
+  "model": "openai/gpt-oss-120b",
+  "generatedAt": "2026-10-01T01:52:48+00:00"
+ },
+ {
+  "levelId": 5,
+  "quest": {
+   "oneLiner": "Tool calling lets an LLM ask your code to run a specific function and then use the result.",
+   "story": {
+    "pain": "LLMs could only return text, so they could not fetch live data or perform actions like placing an order.",
+    "idea": "Define a tool (name, description, input schema). The model decides when to call it, your code runs it, and the result is fed back.",
+    "unlocked": "Agents can now book a restaurant, check order status, or query a database in real time.",
+    "origin": "Tool calling grew from the ReAct pattern that combined reasoning and acting steps [1] and was later formalized as function calling in LLM APIs [3][4]."
+   },
+   "beforeAfter": [
+    {
+     "approach": "Prompt engineering only",
+     "how": "Write prompts that ask the model to embed data in its answer, hoping it knows the latest info.",
+     "breaks": "Model knowledge is stale; no guaranteed access to real‑time data; brittle when data changes."
+    },
+    {
+     "approach": "External retrieval then concatenate",
+     "how": "Your service fetches data (e.g., from a DB) and appends it to the prompt before sending it to the model.",
+     "breaks": "Hard to keep context consistent; limited token budget; you must decide when to retrieve yourself."
+    },
+    {
+     "approach": "Tool calling",
+     "how": "Define tools with JSON schemas. The model outputs a function call; your runtime executes it and returns the output as a new message.",
+     "breaks": "Requires orchestration, auth, and error handling, but gives reliable, typed interactions."
+    }
+   ],
+   "production": [
+    {
+     "title": "Order status lookup",
+     "text": "User asks \"Where is my pizza?\". The model calls the `getOrderStatus` tool with order ID, your code queries the delivery service, and the result is shown to the user [2][4]."
+    },
+    {
+     "title": "Menu recommendation",
+     "text": "User says \"I want a vegan meal near me\". The model calls `searchRestaurants` with dietary filters, your service hits a geo‑API, and the model formats the top picks [2][6]."
+    },
+    {
+     "title": "Support ticket escalation",
+     "text": "User reports a bug. The model calls `createTicket` with details; your backend creates a ticket in the issue tracker and returns the ticket ID for confirmation [5][7]."
+    }
+   ],
+   "roles": {
+    "qa": [
+     "Write tests that verify the model produces correctly structured calls.",
+     "Validate error paths when a tool fails."
+    ],
+    "frontend": [
+     "Display tool results as part of the chat UI.",
+     "Handle loading states while a tool runs."
+    ],
+    "backend": [
+     "Implement the tool functions and secure their execution.",
+     "Log each call for monitoring and debugging."
+    ],
+    "leadership": [
+     "Prioritize which business actions need a tool.",
+     "Allocate resources for the orchestration layer."
+    ]
+   },
+   "tools": [
+    {
+     "group": "Define it",
+     "items": [
+      {
+       "name": "Tool schema",
+       "what": "JSON definition of name, description, and input fields."
+      }
+     ]
+    },
+    {
+     "group": "Run it",
+     "items": [
+      {
+       "name": "Executor",
+       "what": "Code that parses the model's call, runs the function, and formats the output."
+      }
+     ]
+    },
+    {
+     "group": "Connect it",
+     "items": [
+      {
+       "name": "Gateway",
+       "what": "API layer that routes calls, handles auth, and returns results to the model."
+      },
+      {
+       "name": "Monitoring",
+       "what": "Track latency, errors, and usage of each tool."
+      }
+     ]
+    }
+   ],
+   "atScale": {
+    "lead": "A demo can be built in a few hours, but production needs a full orchestration service.",
+    "ops": [
+     {
+      "name": "Auth",
+      "text": "Secure credential handling for each external API."
+     },
+     {
+      "name": "Latency",
+      "text": "Measure and bound tool execution time to keep chat responsive."
+     },
+     {
+      "name": "Error handling",
+      "text": "Gracefully recover from tool failures and return useful messages."
+     },
+     {
+      "name": "Observability",
+      "text": "Log calls, monitor success rates, and alert on anomalies."
+     }
+    ],
+    "modelShare": 20,
+    "takeaway": "The model is just the decision maker; most work is building a reliable, secure tool‑execution layer."
+   }
+  },
+  "sources": [
+   {
+    "n": 1,
+    "title": "Tool Calling Is Not a Solved Problem - by Jae Li",
+    "url": "https://substack.com/home/post/p-167344254"
+   },
+   {
+    "n": 2,
+    "title": "Tool Calling Explained: The Core of AI Agents (2026 Guide) | Composio",
+    "url": "https://composio.dev/content/ai-agent-tool-calling-guide"
+   },
+   {
+    "n": 3,
+    "title": "What Is Tool Calling? | IBM",
+    "url": "https://www.ibm.com/think/topics/tool-calling"
+   },
+   {
+    "n": 4,
+    "title": "What Is LLM Tool Calling: Extend AI with External Tools",
+    "url": "https://www.truefoundry.com/glossary/llm-tool-calling"
+   },
+   {
+    "n": 5,
+    "title": "What is LLM Tool Calling? AI Function Calling | Spice AI",
+    "url": "https://spice.ai/learn/llm-tool-calling"
+   },
+   {
+    "n": 6,
+    "title": "AI Tool Calling: From Scratch to Production",
+    "url": "https://www.decodingai.com/p/tool-calling-from-scratch-to-production"
+   },
+   {
+    "n": 7,
+    "title": "Build Smarter Apps: Tool Calling & AI Orchestration Explained | Callstack",
+    "url": "https://www.callstack.com/tutorials/build-smarter-apps-tool-calling-ai-orchestration-explained"
+   },
+   {
+    "n": 8,
+    "title": "What is Tool Calling? | Databricks Blog",
+    "url": "https://www.databricks.com/blog/what-is-tool-calling"
+   },
+   {
+    "n": 9,
+    "title": "A Comparison of Open Source LLM Frameworks for Pipelining",
+    "url": "https://winder.ai/comparison-open-source-llm-frameworks-pipelining"
+   },
+   {
+    "n": 10,
+    "title": "Top LLM Frameworks for AI Application Development | Mirascope",
+    "url": "https://mirascope.com/blog/llm-frameworks"
+   },
+   {
+    "n": 11,
+    "title": "Open-Source NLP Libraries & Frameworks - ESP on CB Insights",
+    "url": "https://www.cbinsights.com/esp/enterprise-tech/development/open-source-nlp-libraries-&-frameworks"
+   },
+   {
+    "n": 12,
+    "title": "Open-Source NLP Libraries & Frameworks - ESP on CB Insights",
+    "url": "https://www.cbinsights.com/esp/enterprise-tech/bi-&-operational-intelligence/open-source-nlp-libraries-&-frameworks"
+   },
+   {
+    "n": 13,
+    "title": "Local LLM Tool Calling: Which LLM Should You Use? | DockerTool Calling with Local LLMs: A Practical Evaluation | Docker",
+    "url": "https://www.docker.com/blog/local-llm-tool-calling-a-practical-evaluation"
+   },
+   {
+    "n": 14,
+    "title": "Multi-Turn Tool-Calling LLMs: Advances & Challenges",
+    "url": "https://www.emergentmind.com/topics/multi-turn-tool-calling-llms"
+   },
+   {
+    "n": 15,
+    "title": "ScaleCall Agentic Tool Calling at Scale for Fintech: Challenges, Methods, and Deployment Insights",
+    "url": "https://arxiv.org/html/2511.00074v1"
+   },
+   {
+    "n": 16,
+    "title": "Scaling LLM Chatbots: Solving Concurrency and Tool Calling Consistency",
+    "url": "https://medium.com/@kaiqueperezz/scaling-llm-chatbots-solving-concurrency-and-tool-calling-consistency-298278b3bccc"
+   },
+   {
+    "n": 17,
+    "title": "Toolchaining: The Problem No One is Talking About | Scale AI",
+    "url": "https://scale.com/blog/toolchaining-llm-plans"
+   }
+  ],
+  "model": "openai/gpt-oss-120b",
+  "generatedAt": "2026-10-01T07:45:48+00:00"
+ },
+ {
+  "levelId": 6,
+  "quest": {
+   "oneLiner": "MCP is a universal protocol that lets AI agents talk to tools and data sources the same way a USB cable lets devices connect.",
+   "story": {
+    "pain": "Before MCP each AI model needed a custom connector for every tool, creating an M × N explosion of code and maintenance.",
+    "idea": "MCP defines a common JSON‑RPC‑based language and a server that wraps tools, so any model can call any tool through a single interface.",
+    "unlocked": "Teams can add a new service once and instantly make it usable by all AI agents, reducing integration time and bugs.",
+    "origin": "Anthropic introduced MCP in November 2024 as an open standard to solve the M × N problem, inspired by the Language Server Protocol [1][4][5]."
+   },
+   "beforeAfter": [
+    {
+     "approach": "Hard‑coded function calls",
+     "how": "Each model had its own SDK that directly invoked a specific API endpoint.",
+     "breaks": "Scaling requires writing a new wrapper for every model‑tool pair; security and versioning are fragmented."
+    },
+    {
+     "approach": "Custom tool‑specific adapters",
+     "how": "Teams built a thin service per tool that translated a model's request into the tool's API.",
+     "breaks": "Still M × N: every new model needs a new adapter for each tool, and discovery is manual."
+    },
+    {
+     "approach": "Model Context Protocol (MCP)",
+     "how": "An MCP server implements a standard JSON‑RPC interface for a tool; an MCP client (the AI app) talks to any server using the same protocol.",
+     "breaks": "None listed; MCP reduces the integration matrix to M + N."
+    }
+   ],
+   "production": [
+    {
+     "title": "Customer‑support agent for FoodieGo",
+     "text": "The AI agent asks the MCP server for the latest order status, then sends a confirmation email—all using the same MCP call pattern, eliminating separate webhook code [9][10]."
+    },
+    {
+     "title": "Menu‑search RAG",
+     "text": "FoodieGo exposes its restaurant catalog as an MCP tool; the agent retrieves relevant dishes in real time, improving answer accuracy without custom search integration [9][13]."
+    },
+    {
+     "title": "Dynamic pricing workflow",
+     "text": "A pricing microservice is wrapped by an MCP server; the AI can request a price quote and automatically apply discounts, keeping business logic centralized [9][15]."
+    }
+   ],
+   "roles": {
+    "qa": [
+     "Validate MCP request/response schemas with simple JSON tests.",
+     "Check that tool permissions are enforced by the MCP server."
+    ],
+    "frontend": [
+     "Invoke MCP client methods from the UI when a user asks a question.",
+     "Show loading states based on MCP call latency."
+    ],
+    "backend": [
+     "Implement MCP servers for each internal service (order, menu, pricing).",
+     "Maintain versioned tool manifests for safe upgrades."
+    ],
+    "leadership": [
+     "Track integration velocity – new tool added = one MCP server, not many adapters.",
+     "Assess security posture via MCP audit logs."
+    ]
+   },
+   "tools": [
+    {
+     "group": "Build it",
+     "items": [
+      {
+       "name": "MCP Server SDK",
+       "what": "Library to expose any service as an MCP‑compatible tool (Python, Node, Go)."
+      },
+      {
+       "name": "MCP Client Library",
+       "what": "Runtime that lets an LLM send JSON‑RPC requests to any MCP server."
+      }
+     ]
+    },
+    {
+     "group": "Test it",
+     "items": [
+      {
+       "name": "MCP Mock Server",
+       "what": "Fake server that returns deterministic responses for unit tests."
+      },
+      {
+       "name": "Schema Validator",
+       "what": "Tool that checks request and response payloads against the MCP JSON‑RPC schema."
+      }
+     ]
+    },
+    {
+     "group": "Connect it",
+     "items": [
+      {
+       "name": "Tool Registry",
+       "what": "Central catalog of available MCP tools with version and permission metadata."
+      },
+      {
+       "name": "Discovery Proxy",
+       "what": "Service that lets the AI ask “what tools are available?” and receives the registry list."
+      }
+     ]
+    }
+   ],
+   "atScale": {
+    "lead": "Demoing MCP with one tool is easy; running dozens of secure, audited tool servers for millions of users is the real engineering effort.",
+    "ops": [
+     {
+      "name": "Security",
+      "text": "Enforce per‑tool auth, audit logs, and protect against tool‑poisoning attacks."
+     },
+     {
+      "name": "Observability",
+      "text": "Collect latency, error rates, and usage metrics per MCP call."
+     },
+     {
+      "name": "Scaling",
+      "text": "Load‑balance MCP servers, auto‑scale containers, and cache frequent tool responses."
+     },
+     {
+      "name": "Versioning",
+      "text": "Manage tool manifest versions so AI agents can gracefully fall back."
+     }
+    ],
+    "modelShare": 15,
+    "takeaway": "The model is a small part; the majority of production work is building, securing, and operating the MCP infrastructure."
+   }
+  },
+  "sources": [
+   {
+    "n": 1,
+    "title": "What is MCP? The Universal Connector for AI Explained - Backslash",
+    "url": "https://www.backslash.security/blog/what-is-mcp-model-context-protocol"
+   },
+   {
+    "n": 2,
+    "title": "The Surprising Origins of the Model Context Protocol",
+    "url": "https://thesignalpath.xyz/the-surprising-origins-of-the-model-context-protocol"
+   },
+   {
+    "n": 3,
+    "title": "What is Model Context Protocol (MCP)? A guide | Google Cloud",
+    "url": "https://cloud.google.com/discover/what-is-model-context-protocol"
+   },
+   {
+    "n": 4,
+    "title": "Why MCP Was Created: The AI Integration Problem It Solves",
+    "url": "https://genaiunplugged.substack.com/p/why-mcp-was-created-full-course-lesson"
+   },
+   {
+    "n": 5,
+    "title": "Model Context Protocol - Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Model_Context_Protocol"
+   },
+   {
+    "n": 6,
+    "title": "MCP Use Cases: Real-World Applications for AI Agents | Blaxel",
+    "url": "https://blaxel.ai/blog/mcp-use-cases"
+   },
+   {
+    "n": 7,
+    "title": "What is the Model Context Protocol (MCP)? | Databricks",
+    "url": "https://www.databricks.com/blog/what-is-model-context-protocol"
+   },
+   {
+    "n": 8,
+    "title": "What is the Model Context Protocol (MCP)? - Model Context Protocol",
+    "url": "https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro"
+   },
+   {
+    "n": 9,
+    "title": "MCP: The AI Workflow Tool Your Business Needs - Rubico Blog",
+    "url": "https://rubicotech.com/blog/mcp-the-ai-workflow-tool-your-business-needs"
+   },
+   {
+    "n": 10,
+    "title": "Prismatic Launches MCP Flow Server for Production-Ready AI Integrations | Markets Insider",
+    "url": "https://markets.businessinsider.com/news/stocks/prismatic-launches-mcp-flow-server-for-production-ready-ai-integrations-1035494941"
+   },
+   {
+    "n": 11,
+    "title": "The Top 7 MCP-Supported AI Frameworks",
+    "url": "https://getstream.io/blog/mcp-llms-agents"
+   },
+   {
+    "n": 12,
+    "title": "Model Context Protocol",
+    "url": "https://github.com/modelcontextprotocol"
+   },
+   {
+    "n": 13,
+    "title": "12 Frameworks to Build MCP AI Agents | Alex Xu",
+    "url": "https://www.linkedin.com/posts/alexxubyte_systemdesign-coding-interviewtips-activity-7356711580262113281-UsE2"
+   },
+   {
+    "n": 14,
+    "title": "Medium",
+    "url": "https://medium.com/@techlatest.net/top-10-open-source-user-interfaces-for-llms-94e3dd4ae20b"
+   },
+   {
+    "n": 15,
+    "title": "MCP in enterprise: real-world applications and challenges",
+    "url": "https://xenoss.io/blog/mcp-model-context-protocol-enterprise-use-cases-implementation-challenges"
+   },
+   {
+    "n": 16,
+    "title": "Building Scalable AI Tool Servers with Model Context Protocol (MCP) and Heroku (Sponsor: Heroku)",
+    "url": "https://www.youtube.com/watch?v=01I4ywanRDc"
+   },
+   {
+    "n": 17,
+    "title": "What Is the Model Context Protocol (MCP) and How It Works",
+    "url": "https://www.descope.com/learn/post/mcp"
+   },
+   {
+    "n": 18,
+    "title": "MCP tool design: Practical approaches and tradeoffs | Artificial Intelligence",
+    "url": "https://aws.amazon.com/blogs/machine-learning/mcp-tool-design-practical-approaches-and-tradeoffs"
+   },
+   {
+    "n": 19,
+    "title": "6 challenges of using the Model Context Protocol (MCP)",
+    "url": "https://www.merge.dev/blog/mcp-challenges"
+   }
+  ],
+  "model": "openai/gpt-oss-120b",
+  "generatedAt": "2026-10-01T07:46:58+00:00"
+ },
+ {
+  "levelId": 7,
+  "quest": {
+   "oneLiner": "An agent loop is a repeatable cycle where an LLM thinks, uses a tool, watches the result, and decides whether to keep going.",
+   "story": {
+    "pain": "LLMs that answer once cannot finish long‑horizon tasks; they stop after a single call and leave work half‑done [2][7].",
+    "idea": "The agent loop interleaves reasoning (think) with tool use (act) and observation, repeating until a stop condition is met [1][4].",
+    "unlocked": "Agents can run autonomous multi‑step jobs, such as fixing code overnight or handling a full order flow, without constant human supervision [8].",
+    "origin": "The pattern grew from the ReAct research (Reason + Act) published in 2022 by Princeton and Google, later called the agent loop in engineering blogs [1][4]."
+   },
+   "beforeAfter": [
+    {
+     "approach": "Single‑shot prompting",
+     "how": "Send the user query to an LLM once and return the generated text.",
+     "breaks": "Cannot handle tasks that need multiple steps or external actions; often incomplete or wrong."
+    },
+    {
+     "approach": "Chain‑of‑thought prompting",
+     "how": "Ask the LLM to write out its reasoning before answering, but still a single call.",
+     "breaks": "Still lacks the ability to act on the world or observe results; loops are missing."
+    },
+    {
+     "approach": "Agent loop",
+     "how": "Repeat: give context, let the LLM reason, call a tool, observe the tool’s output, feed back, and stop on a final answer or max steps [2][6].",
+     "breaks": "Requires careful stop conditions and engineering to avoid infinite loops."
+    }
+   ],
+   "production": [
+    {
+     "title": "Order troubleshooting",
+     "text": "FoodieGo’s AI support agent receives a failed order report, calls the order‑lookup tool, sees the status, retries the payment, and confirms resolution, looping until success or timeout [2][6]."
+    },
+    {
+     "title": "Menu recommendation refinement",
+     "text": "The agent suggests dishes, calls a taste‑profile API, observes user feedback, and iterates the list until the user accepts a suggestion, all within the loop [7]."
+    },
+    {
+     "title": "Night‑time code fix",
+     "text": "An autonomous coding agent runs tests, observes failures, patches code, reruns tests, and stops when all tests pass, allowing work to continue after developers leave [8]."
+    }
+   ],
+   "roles": {
+    "qa": [
+     "Write test cases that the loop can call as actions.",
+     "Define stop conditions that prevent endless retries."
+    ],
+    "frontend": [
+     "Expose tool endpoints (e.g., payment, recommendation) that the loop can invoke.",
+     "Show intermediate loop states to users for transparency."
+    ],
+    "backend": [
+     "Implement tool APIs the loop will call.",
+     "Log each think‑act‑observe step for debugging."
+    ],
+    "leadership": [
+     "Set limits on max steps and cost budgets for loops.",
+     "Monitor loop success metrics to decide product rollout."
+    ]
+   },
+   "tools": [
+    {
+     "group": "Build it",
+     "items": [
+      {
+       "name": "LangGraph",
+       "what": "Low‑level library to define stateful loop nodes and edges."
+      },
+      {
+       "name": "CrewAI",
+       "what": "High‑level framework that wraps the loop with user‑friendly configs."
+      },
+      {
+       "name": "OpenAI Agents SDK",
+       "what": "Provides a ready‑made loop runner and tool integration."
+      }
+     ]
+    },
+    {
+     "group": "Observe it",
+     "items": [
+      {
+       "name": "Helicone",
+       "what": "Observability platform that records each LLM call and tool use."
+      },
+      {
+       "name": "Humanloop",
+       "what": "Human‑in‑the‑loop review to catch bad loop outcomes."
+      }
+     ]
+    }
+   ],
+   "atScale": {
+    "lead": "Demoing a loop is easy; running it for real users needs robust engineering around it.",
+    "ops": [
+     {
+      "name": "Latency",
+      "text": "Each iteration adds latency; need caching and parallelism."
+     },
+     {
+      "name": "Cost",
+      "text": "Multiple LLM calls multiply token spend; enforce budgets."
+     },
+     {
+      "name": "Reliability",
+      "text": "Handle tool failures and ensure loops can recover."
+     },
+     {
+      "name": "Observability",
+      "text": "Log every step to debug loops in production."
+     },
+     {
+      "name": "Safety",
+      "text": "Guardrails stop harmful actions before they happen."
+     },
+     {
+      "name": "Scalability",
+      "text": "Distribute loop workers to handle many concurrent users."
+     }
+    ],
+    "modelShare": 20,
+    "takeaway": "The model is only a small part; most effort is in building the surrounding loop infrastructure."
+   }
+  },
+  "sources": [
+   {
+    "n": 1,
+    "title": "An Introduction to Loop Engineering - MachineLearningMastery.com",
+    "url": "https://machinelearningmastery.com/an-introduction-to-loop-engineering"
+   },
+   {
+    "n": 2,
+    "title": "The Agent Loop Decoded | developers",
+    "url": "https://blogs.oracle.com/developers/the-agent-loop-decoded-three-levels-every-agent-engineer-must-know"
+   },
+   {
+    "n": 3,
+    "title": "From LLMs to Agent Loops: An Introduction to Building AI Agents",
+    "url": "https://www.youtube.com/watch?v=cFHJYdSJzPA"
+   },
+   {
+    "n": 4,
+    "title": "What Is Loop Engineering? The New Meta for AI Coding Agents | MindStudio",
+    "url": "https://www.mindstudio.ai/blog/what-is-loop-engineering-ai-coding-agents"
+   },
+   {
+    "n": 5,
+    "title": "The Art of Loop Engineering",
+    "url": "https://www.langchain.com/blog/the-art-of-loop-engineering"
+   },
+   {
+    "n": 6,
+    "title": "What Is the AI Agent Loop? The Core Architecture Behind Autonomous AI Systems | developers",
+    "url": "https://blogs.oracle.com/developers/what-is-the-ai-agent-loop-the-core-architecture-behind-autonomous-ai-systems"
+   },
+   {
+    "n": 7,
+    "title": "What Is an AI Agent Loop?",
+    "url": "https://www.jetbrains.com/pages/ai-agents/architecture/ai-agent-loops"
+   },
+   {
+    "n": 8,
+    "title": "Loop Engineering: The Missing Layer That Makes AI Coding Agents Work in Production - Software Testing and Development Company",
+    "url": "https://shiftasia.com/column/loop-engineering-the-missing-layer-that-makes-ai-coding-agents-work-in-production"
+   },
+   {
+    "n": 9,
+    "title": "Designing Loops for Production-Grade Work | Blog | Liquid AI",
+    "url": "https://www.liquid.ai/blog/agent-loops"
+   },
+   {
+    "n": 10,
+    "title": "A Startup Says Cursor's AI Agent Deleted Its Production Database - Business Insider",
+    "url": "https://www.businessinsider.com/pocketos-cursor-ai-agent-deleted-production-database-startup-railway-2026-4"
+   },
+   {
+    "n": 11,
+    "title": "A tour of popular open source frameworks for LLM-powered agents",
+    "url": "https://www.dataiku.com/blog/open-source-frameworks-for-llm-powered-agents"
+   },
+   {
+    "n": 12,
+    "title": "GitHub - tensorchord/Awesome-LLMOps: An awesome & curated list of best LLMOps tools for developers · GitHub",
+    "url": "https://github.com/tensorchord/Awesome-LLMOps"
+   },
+   {
+    "n": 13,
+    "title": "A Comparison of Open Source LLM Frameworks for Pipelining",
+    "url": "https://winder.ai/comparison-open-source-llm-frameworks-pipelining"
+   },
+   {
+    "n": 14,
+    "title": "12 Best Open-Source AI Agent Frameworks on GitHub (2026)",
+    "url": "https://www.ayautomate.com/blog/best-open-source-ai-agent-frameworks"
+   },
+   {
+    "n": 15,
+    "title": "Open-Source NLP Libraries & Frameworks - ESP on CB Insights",
+    "url": "https://www.cbinsights.com/esp/enterprise-tech/development/open-source-nlp-libraries-&-frameworks"
+   },
+   {
+    "n": 16,
+    "title": "Human-in-the-Loop Review Workflows for LLM Apps & Agents",
+    "url": "https://www.comet.com/site/blog/human-in-the-loop"
+   },
+   {
+    "n": 17,
+    "title": "Human-in-the-Loop (HITL) for AI Agents: Patterns and Best Practices",
+    "url": "https://www.youtube.com/watch?v=YCFGjLjNOyw"
+   },
+   {
+    "n": 18,
+    "title": "AI Agent Systems: Architectures, Applications, and Evaluation",
+    "url": "https://arxiv.org/html/2601.01743v1"
+   },
+   {
+    "n": 19,
+    "title": "Advancing AI operations with AI Agent and LLM Observability | IBM",
+    "url": "https://www.ibm.com/new/announcements/advancing-ai-operations-with-ai-agent-and-llm-observability"
+   }
+  ],
+  "model": "openai/gpt-oss-120b",
+  "generatedAt": "2026-10-01T08:19:48+00:00"
+ },
+ {
+  "levelId": 8,
+  "quest": {
+   "oneLiner": "Context management is picking and compressing the right facts for the model’s notebook so each call stays cheap and accurate.",
+   "story": {
+    "pain": "LLMs forget everything after each request, so developers either send the whole conversation or lose important details, leading to errors and high token costs.",
+    "idea": "Treat the model as a stateless notebook and explicitly choose what facts, summaries, and recent messages to include – a practice called context engineering.",
+    "unlocked": "Agents can stay coherent over many turns without blowing the token budget, and repeated prompts can be cached for speed.",
+    "origin": "The term grew from early LLM prompt work and was formalized in blogs like LangChain’s “The rise of context engineering” [1] and Elastic’s discussion of context management for agentic workflows [2]."
+   },
+   "beforeAfter": [
+    {
+     "approach": "Send full conversation history",
+     "how": "Every turn is concatenated and sent to the model, hoping it remembers prior context.",
+     "breaks": "Token limits are hit quickly; latency rises; irrelevant old data dilutes the signal."
+    },
+    {
+     "approach": "Stateless single‑turn prompts",
+     "how": "Only the current user message is sent; the model starts fresh each time.",
+     "breaks": "The agent loses continuity; users must repeat information; experience feels broken."
+    },
+    {
+     "approach": "Context management (memory + compaction)",
+     "how": "Store pinned facts (e.g., user’s address), keep a short summary of older turns, and send recent messages in full. Cache static prompt sections so they are reused without recomputation.",
+     "breaks": "Requires engineering to decide what to pin, how to summarize, and how to invalidate stale data."
+    }
+   ],
+   "production": [
+    {
+     "title": "Order status check",
+     "text": "FoodieGo’s AI reads the user’s order ID (pinned fact) and a 2‑sentence summary of the last 5 interactions, then adds the latest question. This fits under the token limit and avoids re‑sending the whole order history [2]."
+    },
+    {
+     "title": "Personalized restaurant recommendation",
+     "text": "The agent pulls the user’s saved dietary preferences (pinned) and a compact summary of past likes, then adds the current query. Reusing the same preference block across calls is prompt‑cached, saving cost [1]."
+    },
+    {
+     "title": "Support ticket escalation",
+     "text": "When a complaint is filed, the AI includes the ticket ID (pinned), a brief summary of prior back‑and‑forth, and the latest user message. This ensures the model sees the whole case without exceeding the context window [3]."
+    }
+   ],
+   "roles": {
+    "qa": [
+     "Create test cases that verify pinned facts stay consistent across calls.",
+     "Check that summaries do not omit needed details."
+    ],
+    "frontend": [
+     "Send only the latest user message plus a reference ID for the backend to fetch context.",
+     "Show loading indicators if context retrieval takes time."
+    ],
+    "backend": [
+     "Implement a memory store for pinned facts and a summarizer for old turns.",
+     "Cache static prompt parts and invalidate them when the knowledge base changes."
+    ],
+    "leadership": [
+     "Allocate budget for building the context store rather than buying larger models.",
+     "Measure cost per request before and after context compaction."
+    ]
+   },
+   "tools": [
+    {
+     "group": "Build it",
+     "items": [
+      {
+       "name": "LangChain",
+       "what": "Orchestrates retrieval, summarization, and prompt assembly for context windows [11]."
+      },
+      {
+       "name": "Zep",
+       "what": "Provides managed memory APIs to store pinned facts and summaries [15]."
+      }
+     ]
+    },
+    {
+     "group": "Test it",
+     "items": [
+      {
+       "name": "Opik",
+       "what": "Runs experiments to compare token usage and response quality with different context sizes [16]."
+      },
+      {
+       "name": "Helicone",
+       "what": "Observes token counts and latency per request, helping spot over‑filled contexts [12]."
+      }
+     ]
+    }
+   ],
+   "atScale": {
+    "lead": "A prototype works with a few dozen users; scaling to millions needs a robust context store, summarization pipeline, and caching layer.",
+    "ops": [
+     {
+      "name": "Latency",
+      "text": "Summarization adds milliseconds; cache warm‑up reduces repeat latency."
+     },
+     {
+      "name": "Freshness",
+      "text": "Pinned facts must be invalidated when a user updates their address or preferences."
+     },
+     {
+      "name": "Cost",
+      "text": "Prompt‑caching cuts token usage by 30‑40% for static system prompts."
+     },
+     {
+      "name": "Observability",
+      "text": "Track token budgets per request to avoid runaway costs."
+     }
+    ],
+    "modelShare": 25,
+    "takeaway": "Most of the work is engineering the notebook – storing, summarizing, and caching – not the model itself."
+   }
+  },
+  "sources": [
+   {
+    "n": 1,
+    "title": "The rise of \"context engineering\"",
+    "url": "https://www.langchain.com/blog/the-rise-of-context-engineering"
+   },
+   {
+    "n": 2,
+    "title": "Context engineering: LLM evolution for agentic AI | Elasticsearch Labs",
+    "url": "https://www.elastic.co/search-labs/blog/context-engineering-llm-evolution-agentic-ai"
+   },
+   {
+    "n": 3,
+    "title": "Effective context engineering for AI agents",
+    "url": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents"
+   },
+   {
+    "n": 4,
+    "title": "How to Build Reliable LLM Systems with Context Engineering | Aishwarya Srinivasan posted on the topic | LinkedIn",
+    "url": "https://www.linkedin.com/posts/aishwarya-srinivasan_the-context-engineering-framework-is-quickly-activity-7369760727391232000-oVmP"
+   },
+   {
+    "n": 5,
+    "title": "Chapter 7: Context Engineering | AI Agent Architecture",
+    "url": "https://waylandz.com/ai-agent-book-en/chapter-07-context-engineering"
+   },
+   {
+    "n": 6,
+    "title": "Context Window Management: Strategies for Long-Context AI Agents and Chatbots",
+    "url": "https://www.getmaxim.ai/articles/context-window-management-strategies-for-long-context-ai-agents-and-chatbots"
+   },
+   {
+    "n": 7,
+    "title": "10 Best Context Management Tools for Enterprise AI Teams",
+    "url": "https://www.ovaledge.com/blog/context-management-tools"
+   },
+   {
+    "n": 8,
+    "title": "DataHub Releases State of Context Management Report: Context is Critical for AI Success | Markets Insider",
+    "url": "https://markets.businessinsider.com/news/stocks/datahub-releases-state-of-context-management-report-context-is-critical-for-ai-success-1035914696"
+   },
+   {
+    "n": 9,
+    "title": "Context Management Strategies That Actually Scale",
+    "url": "https://datahub.com/blog/context-management-strategies"
+   },
+   {
+    "n": 10,
+    "title": "Context Engineering: How to Manage AI Context at Scale | Cortex",
+    "url": "https://www.cortex.io/post/context-engineering"
+   },
+   {
+    "n": 11,
+    "title": "A Comparison of Open Source LLM Frameworks for Pipelining",
+    "url": "https://winder.ai/comparison-open-source-llm-frameworks-pipelining"
+   },
+   {
+    "n": 12,
+    "title": "GitHub - tensorchord/Awesome-LLMOps: An awesome & curated list of best LLMOps tools for developers · GitHub",
+    "url": "https://github.com/tensorchord/Awesome-LLMOps"
+   },
+   {
+    "n": 13,
+    "title": "10 Open-Source LLM Frameworks Developers Can’t Ignore in 2025 - Zilliz blog",
+    "url": "https://zilliz.com/blog/10-open-source-llm-frameworks-developers-cannot-ignore-in-2025"
+   },
+   {
+    "n": 14,
+    "title": "A tour of popular open source frameworks for LLM-powered agents",
+    "url": "https://www.dataiku.com/blog/open-source-frameworks-for-llm-powered-agents"
+   },
+   {
+    "n": 15,
+    "title": "Context Management Tools for LLM Chat — How to Choose — supermemory",
+    "url": "https://supermemory.ai/blog/best-context-management-tools-llm-chat"
+   },
+   {
+    "n": 16,
+    "title": "Context Engineering Best Practices for Agentic Systems",
+    "url": "https://www.comet.com/site/blog/context-engineering"
+   },
+   {
+    "n": 17,
+    "title": "RAG Is Dead. Long Live Context Engineering for LLM Systems",
+    "url": "https://www.callstack.com/blog/rag-is-dead-long-live-context-engineering-for-llm-systems"
+   },
+   {
+    "n": 18,
+    "title": "Context engineering: Best practices for an emerging discipline | Redis",
+    "url": "https://redis.io/blog/context-engineering-best-practices-for-an-emerging-discipline"
+   },
+   {
+    "n": 19,
+    "title": "Medium",
+    "url": "https://dr-arsanjani.medium.com/context-engineering-challenges-best-practices-8e4b5252f94f"
+   },
+   {
+    "n": 20,
+    "title": "Context Engineering for Observability and LLMs | Mezmo",
+    "url": "https://www.mezmo.com/learn/context-engineering-for-observability-how-to-deliver-the-right-data-to-llms"
+   }
+  ],
+  "model": "openai/gpt-oss-120b",
+  "generatedAt": "2026-10-01T08:20:56+00:00"
+ },
+ {
+  "levelId": 9,
+  "quest": {
+   "oneLiner": "Guardrails are code that checks inputs and outputs around a LLM so the model can be tricked but the system stays safe.",
+   "story": {
+    "pain": "Developers let the LLM see user prompts directly, so attackers can inject hidden commands or leak data.",
+    "idea": "Add a layer that validates every prompt, filters every response, and requires human approval for risky actions.",
+    "unlocked": "The AI support agent can safely answer FoodieGo orders without exposing PII or executing unwanted commands.",
+    "origin": "Guardrails were described as programmatic controls that sit around a model, validating inputs before the model sees them and filtering outputs before users do [3]."
+   },
+   "beforeAfter": [
+    {
+     "approach": "Trust the model",
+     "how": "Rely on the LLM to refuse unsafe requests on its own.",
+     "breaks": "Models can be fooled by prompt injection and still produce harmful output."
+    },
+    {
+     "approach": "Post‑hoc moderation",
+     "how": "Run a separate classifier after the model returns text and block bad results.",
+     "breaks": "The unsafe output may already have been sent to the user or cause side effects before it can be removed."
+    },
+    {
+     "approach": "Full guardrails",
+     "how": "Validate prompts, enforce least‑privilege tool use, run server‑side checks, require human‑in‑the‑loop for risky actions, and log everything.",
+     "breaks": "Adds latency and engineering complexity, but protects against prompt injection by assuming the model will be fooled [3][4]."
+    }
+   ],
+   "production": [
+    {
+     "title": "Input validation",
+     "text": "FoodieGo strips PII and rejects prompts that request illegal actions before they reach the LLM, using regex and rule‑based checks [3][15]."
+    },
+    {
+     "title": "Output filtering",
+     "text": "After the model replies, a safety filter removes toxic or off‑topic content and blocks instructions to order restricted items [4][18]."
+    },
+    {
+     "title": "Human‑in‑the‑loop for orders over $200",
+     "text": "If the LLM suggests a high‑value order, the system flags it and requires a supervisor to approve before the order is placed [5][9]."
+    }
+   ],
+   "roles": {
+    "qa": [
+     "Write test cases for prompt‑injection patterns.",
+     "Verify that logs capture rejected prompts."
+    ],
+    "frontend": [
+     "Show users a clear error when a prompt is blocked.",
+     "Avoid sending raw user input directly to the API."
+    ],
+    "backend": [
+     "Implement server‑side validation and audit logging.",
+     "Integrate human‑approval workflow for risky actions."
+    ],
+    "leadership": [
+     "Allocate budget for guardrail tooling and monitoring.",
+     "Set policy that no LLM request bypasses validation."
+    ]
+   },
+   "tools": [
+    {
+     "group": "Validate",
+     "items": [
+      {
+       "name": "Regex / rule engine",
+       "what": "Fast check for disallowed words, PII patterns, and prohibited topics."
+      },
+      {
+       "name": "Guardrails AI library",
+       "what": "Provides ready‑made input/output guards and structured validation [14]."
+      }
+     ]
+    },
+    {
+     "group": "Monitor",
+     "items": [
+      {
+       "name": "Audit log service",
+       "what": "Records each prompt, decision, and human approval for compliance."
+      },
+      {
+       "name": "LLM Guard (open source)",
+       "what": "Runs runtime scanners for prompt injection and toxicity [12]."
+      }
+     ]
+    },
+    {
+     "group": "Human‑in‑the‑loop",
+     "items": [
+      {
+       "name": "Approval dashboard",
+       "what": "Shows flagged high‑value orders to a supervisor for manual review."
+      }
+     ]
+    }
+   ],
+   "atScale": {
+    "lead": "A demo can turn on a single guardrail, but production needs validation, logging, and approval pipelines.",
+    "ops": [
+     {
+      "name": "Latency",
+      "text": "Each guardrail adds microseconds to milliseconds; balance safety vs response time."
+     },
+     {
+      "name": "Observability",
+      "text": "Metrics and alerts for blocked prompts and human approvals."
+     },
+     {
+      "name": "Compliance",
+      "text": "Retention of audit logs for regulatory audits."
+     },
+     {
+      "name": "Fail‑over",
+      "text": "Graceful degradation if a guardrail service is unavailable."
+     },
+     {
+      "name": "Scalability",
+      "text": "Deploy guardrails as stateless services behind a load balancer."
+     },
+     {
+      "name": "Security",
+      "text": "Restrict who can modify guardrail rules."
+     }
+    ],
+    "modelShare": 30,
+    "takeaway": "The model is only a small part; most effort is building, monitoring, and operating the surrounding safety code."
+   }
+  },
+  "sources": [
+   {
+    "n": 1,
+    "title": "Safeguarding LLMs with Guardrails",
+    "url": "https://medium.com/data-science/safeguarding-llms-with-guardrails-4f5d9f57cff2"
+   },
+   {
+    "n": 2,
+    "title": "Building Guardrails for Large Language Models",
+    "url": "https://arxiv.org/html/2402.01822v1"
+   },
+   {
+    "n": 3,
+    "title": "LLM guardrails: what they are and how to run them in production | Engineering | ClickHouse Resource Hub | ClickHouse",
+    "url": "https://clickhouse.com/resources/engineering/llm-guardrails"
+   },
+   {
+    "n": 4,
+    "title": "LLM Guardrails: Securing LLMs for Safe AI Deployment - WitnessAI",
+    "url": "https://witness.ai/blog/llm-guardrails"
+   },
+   {
+    "n": 5,
+    "title": "Mastering LLM Guardrails: Complete 2026 Guide",
+    "url": "https://orq.ai/blog/llm-guardrails"
+   },
+   {
+    "n": 6,
+    "title": "AI Guardrails: Tutorial & Best Practices",
+    "url": "https://www.patronus.ai/ai-reliability/ai-guardrails"
+   },
+   {
+    "n": 7,
+    "title": "What are AI Guardrails?",
+    "url": "https://www.truefoundry.com/blog/ai-guardrails"
+   },
+   {
+    "n": 8,
+    "title": "AI Guardrails for Employees: Safe AI Adoption Guide | Adaptive Security",
+    "url": "https://www.adaptivesecurity.com/blog/ai-guardrails-for-employees-complete-guide"
+   },
+   {
+    "n": 9,
+    "title": "AI Guardrails: Enforcing Safety Without Slowing Innovation",
+    "url": "https://www.obsidiansecurity.com/blog/ai-guardrails"
+   },
+   {
+    "n": 10,
+    "title": "What Are AI Guardrails? | IBM",
+    "url": "https://www.ibm.com/think/topics/ai-guardrails"
+   },
+   {
+    "n": 11,
+    "title": "Open-Source AI Guardrails: 11 Tools for LLM Security",
+    "url": "https://www.turingpost.com/p/aisecuritytools"
+   },
+   {
+    "n": 12,
+    "title": "Security & Guardrails - Langfuse",
+    "url": "https://langfuse.com/docs/security-and-guardrails"
+   },
+   {
+    "n": 13,
+    "title": "LLM Guardrails (2026): Failure Taxonomy, Libraries Compared, Runtime Classifier",
+    "url": "https://www.morphllm.com/llm-guardrails"
+   },
+   {
+    "n": 14,
+    "title": "GitHub - guardrails-ai/guardrails: Adding guardrails to large language models. · GitHub",
+    "url": "https://github.com/guardrails-ai/guardrails"
+   },
+   {
+    "n": 15,
+    "title": "LLM Guardrails: Strategies & Best Practices in 2025",
+    "url": "https://leanware.co/insights/llm-guardrails"
+   },
+   {
+    "n": 16,
+    "title": "A Survey on LLM Guardrails: Part 1, Methods, Best Practices and Optimisations – BudEcosystem",
+    "url": "https://budecosystem.com/a-survey-on-llm-guardrails-methods-best-practices-and-optimisations"
+   },
+   {
+    "n": 17,
+    "title": "Challenges in Guardrailing Large Language Models for Science",
+    "url": "https://arxiv.org/html/2411.08181v1"
+   },
+   {
+    "n": 18,
+    "title": "LLM guardrails: Best practices for deploying LLM apps securely | Datadog",
+    "url": "https://www.datadoghq.com/blog/llm-guardrails-best-practices"
+   },
+   {
+    "n": 19,
+    "title": "LLM Guardrails for Data Leakage, Prompt Injection, and More - Confident AI",
+    "url": "https://www.confident-ai.com/blog/llm-guardrails-the-ultimate-guide-to-safeguard-llm-systems"
+   }
+  ],
+  "model": "openai/gpt-oss-120b",
+  "generatedAt": "2026-10-01T08:22:03+00:00"
+ },
+ {
+  "levelId": 10,
+  "quest": {
+   "oneLiner": "Evals are repeatable tests that measure whether an AI agent meets the quality you need before you ship it.",
+   "story": {
+    "pain": "Teams built AI agents and only noticed problems after users saw bad replies, because they had no way to check relevance, tone, or safety at scale.",
+    "idea": "Create an evaluation funnel: a golden dataset, code checks, and LLM‑as‑judge that runs automatically and acts as a release gate.",
+    "unlocked": "You can catch regressions early, generate hypotheses, and ship with confidence that the agent behaves as expected.",
+    "origin": "The evaluation funnel idea was described at Spotify as a way to put evals before experiments, not replace them [1]."
+   },
+   "beforeAfter": [
+    {
+     "approach": "Manual QA only",
+     "how": "Humans read a few sample chats and mark them good or bad.",
+     "breaks": "Not scalable, slow, and misses rare failure modes."
+    },
+    {
+     "approach": "Public benchmark scores",
+     "how": "Use a third‑party leaderboard to pick the model with the highest overall score.",
+     "breaks": "Benchmarks measure generic abilities, not the specific success criteria of FoodieGo’s support agent."
+    },
+    {
+     "approach": "Evals (evaluation funnel)",
+     "how": "Run a golden test set, automated code checks, and an LLM‑as‑judge for tone, helpfulness, and safety; block release if thresholds fail.",
+     "breaks": "Requires engineering effort to integrate into CI/CD, but gives reliable, product‑specific signals."
+    }
+   ],
+   "production": [
+    {
+     "title": "Pre‑deployment gate",
+     "text": "Before a new version of FoodieGo’s AI support agent is released, the CI pipeline runs evals on a curated set of user queries. If relevance or tone scores drop, the build is blocked [7][5]."
+    },
+    {
+     "title": "Continuous monitoring",
+     "text": "In production, a sample of live user requests is fed to the agent, the outputs are graded by an LLM‑as‑judge, and alerts fire when drift is detected [8][6]."
+    },
+    {
+     "title": "Hypothesis generation",
+     "text": "When evals flag a pattern (e.g., the agent often suggests unavailable restaurants), engineers create a targeted test and iterate quickly [1]."
+    }
+   ],
+   "roles": {
+    "qa": [
+     "Define the success criteria for relevance and tone.",
+     "Create the golden dataset of sample queries."
+    ],
+    "frontend": [
+     "Expose a test endpoint for the UI to send sample chats to the eval runner.",
+     "Show eval results in a dashboard for quick feedback."
+    ],
+    "backend": [
+     "Implement code checks that verify response formats and latency.",
+     "Integrate the LLM‑as‑judge into the CI pipeline."
+    ],
+    "leadership": [
+     "Set the threshold scores that must be met before release.",
+     "Use eval trends to report AI health to stakeholders."
+    ]
+   },
+   "tools": [
+    {
+     "group": "Build it",
+     "items": [
+      {
+       "name": "OpenAI Evals",
+       "what": "Python framework to define datasets, metrics, and LLM‑as‑judge pipelines."
+      },
+      {
+       "name": "Evidently",
+       "what": "Open‑source library for monitoring eval metrics over time."
+      }
+     ]
+    },
+    {
+     "group": "Test it",
+     "items": [
+      {
+       "name": "CI/CD integration",
+       "what": "Run eval suites on every pull request to catch regressions."
+      },
+      {
+       "name": "Code assertions",
+       "what": "Automated checks that responses contain required fields and cost limits."
+      }
+     ]
+    },
+    {
+     "group": "Connect it",
+     "items": [
+      {
+       "name": "Langfuse",
+       "what": "Tracks eval runs, stores scores, and links them to model versions."
+      },
+      {
+       "name": "Arize Phoenix",
+       "what": "Provides observability for live evals on production traffic."
+      }
+     ]
+    }
+   ],
+   "atScale": {
+    "lead": "Running evals in a demo is easy; making them reliable for millions of daily chats requires robust data pipelines and monitoring.",
+    "ops": [
+     {
+      "name": "Freshness",
+      "text": "Keep the golden dataset updated with new user intents."
+     },
+     {
+      "name": "Latency",
+      "text": "Ensure eval runs add minimal delay to CI and live pipelines."
+     },
+     {
+      "name": "Drift detection",
+      "text": "Alert when live eval scores move beyond set thresholds."
+     },
+     {
+      "name": "Cost control",
+      "text": "Batch eval calls to limit LLM usage fees."
+     }
+    ],
+    "modelShare": 30,
+    "takeaway": "The model is only a fraction of the work; most effort is in data, tooling, and ops that keep the evals trustworthy."
+   }
+  },
+  "sources": [
+   {
+    "n": 1,
+    "title": "Better Experiments with LLM Evals — A funnel, not a fork | Spotify Engineering",
+    "url": "https://engineering.atspotify.com/2026/5/better-experiments-with-llm-evals-a-funnel-not-a-fork"
+   },
+   {
+    "n": 2,
+    "title": "Production LLM Engineering for Data Engineers: Evals, RAG, Agents, and LLMOps | dataskew.io Blog",
+    "url": "https://dataskew.io/blog/production-llm-engineering-for-data-engineers"
+   },
+   {
+    "n": 3,
+    "title": "LLM Evals vs Agent Evals: Key Differences | Oxagen",
+    "url": "https://www.oxagen.ai/blog/llm-evals-vs-agent-evals"
+   },
+   {
+    "n": 4,
+    "title": "Who should own LLM Evals in your org",
+    "url": "https://www.reddit.com/r/prodmgmt/comments/1uozpmo/who_should_own_llm_evals_in_your_org_product_or"
+   },
+   {
+    "n": 5,
+    "title": "Stop Trusting Your LLM Prompts - Write Evals Instead - Spencer Schneidenbach",
+    "url": "https://schneidenba.ch/stop-trusting-your-llm-prompts-write-evals"
+   },
+   {
+    "n": 6,
+    "title": "How to Evaluate AI Systems | Splunk",
+    "url": "https://www.splunk.com/en_us/blog/learn/ai-system-evaluation.html"
+   },
+   {
+    "n": 7,
+    "title": "AI Evals: A Hands-On Guide for Product Teams",
+    "url": "https://www.producttalk.org/ai-evals"
+   },
+   {
+    "n": 8,
+    "title": "AI Evaluation (Evals) | Guild.ai",
+    "url": "https://www.guild.ai/glossary/ai-evaluation-evals"
+   },
+   {
+    "n": 9,
+    "title": "The key to production AI agents: Evaluations | Databricks Blog",
+    "url": "https://www.databricks.com/blog/key-production-ai-agents-evaluations"
+   },
+   {
+    "n": 10,
+    "title": "Demystifying evals for AI agents \\ Anthropic",
+    "url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents"
+   },
+   {
+    "n": 11,
+    "title": "GitHub - aglio-lab/ai-evaluation-tools: The comprehensive list of AI evaluation tools: 300+ open-source and commercial LLM evaluation frameworks, platforms, benchmarks, observability, red teaming, and guardrails — for LLMs, RAG, and AI agents. · GitHub",
+    "url": "https://github.com/aglio-lab/ai-evaluation-tools"
+   },
+   {
+    "n": 12,
+    "title": "Arize Premieres Open Source LLM Evals Library and Support for Traces and Spans",
+    "url": "https://www.prnewswire.com/news-releases/arize-premieres-open-source-llm-evals-library-and-support-for-traces-and-spans-301944584.html"
+   },
+   {
+    "n": 13,
+    "title": "OpenAI Evals — Open Source · Directories by Enterprise DNA",
+    "url": "https://enterprisedna.co/directories/open-source/openai-evals"
+   },
+   {
+    "n": 14,
+    "title": "Build Your Own LLM with Open Source Frameworks and Tools - Open Source For You",
+    "url": "https://www.opensourceforu.com/2025/05/build-your-own-llm-with-open-source-frameworks-and-tools"
+   },
+   {
+    "n": 15,
+    "title": "Open-Source NLP Libraries & Frameworks - ESP on CB Insights",
+    "url": "https://www.cbinsights.com/esp/enterprise-tech/development/open-source-nlp-libraries-&-frameworks"
+   },
+   {
+    "n": 16,
+    "title": "LLM Evaluation: The Ultimate Guide to Metrics, Methods & Best Practices",
+    "url": "https://www.comet.com/site/blog/llm-evaluation-guide"
+   },
+   {
+    "n": 17,
+    "title": "Best Practices and Methods for LLM Evaluation | Databricks Blog",
+    "url": "https://www.databricks.com/blog/best-practices-and-methods-llm-evaluation"
+   },
+   {
+    "n": 18,
+    "title": "Building an LLM evaluation framework: best practices | Datadog",
+    "url": "https://www.datadoghq.com/blog/llm-evaluation-framework-best-practices"
+   },
+   {
+    "n": 19,
+    "title": "LLM Evaluations: Techniques, Challenges, and Best Practices | Label Studio",
+    "url": "https://labelstud.io/blog/llm-evaluations-techniques-challenges-and-best-practices"
+   },
+   {
+    "n": 20,
+    "title": "LLM Evaluation: Frameworks, Metrics, and Best Practices",
+    "url": "https://www.superannotate.com/blog/llm-evaluation-guide"
+   }
+  ],
+  "model": "openai/gpt-oss-120b",
+  "generatedAt": "2026-10-01T01:56:40+00:00"
+ }
+]

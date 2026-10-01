@@ -1,0 +1,319 @@
+[
+ {
+  "ticket_id": "T-1001",
+  "created_at": "2026-09-01T09:12:00Z",
+  "channel": "app",
+  "text": "where is my order #4521??",
+  "first_response_min": 95,
+  "resolved": true,
+  "csat": 2,
+  "label": "order_status"
+ },
+ {
+  "ticket_id": "T-1002",
+  "created_at": "2026-09-01T09:40:00Z",
+  "channel": "app",
+  "text": "my order is late, it's been an hour",
+  "first_response_min": 120,
+  "resolved": true,
+  "csat": 1
+ },
+ {
+  "ticket_id": "T-1003",
+  "created_at": "2026-09-01T10:05:00Z",
+  "channel": "whatsapp",
+  "text": "bhai order kab aayega",
+  "first_response_min": 80,
+  "resolved": true,
+  "csat": 3,
+  "label": "order_status"
+ },
+ {
+  "ticket_id": "T-1004",
+  "created_at": "2026-09-01T10:30:00Z",
+  "channel": "app",
+  "text": "what's the status of my order",
+  "first_response_min": 60,
+  "resolved": true,
+  "csat": 3
+ },
+ {
+  "ticket_id": "T-1005",
+  "created_at": "2026-09-01T11:02:00Z",
+  "channel": "web",
+  "text": "is my food coming or not. call me on 9876543210",
+  "first_response_min": 150,
+  "resolved": true,
+  "csat": 2
+ },
+ {
+  "ticket_id": "T-1001",
+  "created_at": "2026-09-01T09:12:00Z",
+  "channel": "app",
+  "text": "where is my order #4521??",
+  "first_response_min": 95,
+  "resolved": true,
+  "csat": 2,
+  "label": "order_status"
+ },
+ {
+  "ticket_id": "T-1006",
+  "created_at": "2026-09-01T11:20:00Z",
+  "channel": "app",
+  "text": "order still not here, where is the rider",
+  "first_response_min": 110,
+  "resolved": true,
+  "csat": 2,
+  "label": "order_status"
+ },
+ {
+  "ticket_id": "T-1007",
+  "created_at": "2026-09-01T12:00:00Z",
+  "channel": "app",
+  "text": "how long until my order arrives",
+  "first_response_min": 45,
+  "resolved": true,
+  "csat": 4
+ },
+ {
+  "ticket_id": "T-1008",
+  "created_at": "2026-09-01T12:15:00Z",
+  "channel": "whatsapp",
+  "text": "the app says preparing for 40 mins, where is it",
+  "first_response_min": 130,
+  "resolved": false,
+  "csat": null
+ },
+ {
+  "ticket_id": "T-1009",
+  "created_at": "2026-09-01T12:40:00Z",
+  "channel": "app",
+  "text": "where is my biryani",
+  "first_response_min": 70,
+  "resolved": true,
+  "csat": 3,
+  "label": "order_status"
+ },
+ {
+  "ticket_id": "T-1010",
+  "created_at": "2026-09-01T13:05:00Z",
+  "channel": "web",
+  "text": "eta for order 4530? email me at priya.k@example.com",
+  "first_response_min": 90,
+  "resolved": true,
+  "csat": 3
+ },
+ {
+  "ticket_id": "T-1011",
+  "created_at": "2026-09-01T13:30:00Z",
+  "channel": "app",
+  "text": "my order is late again",
+  "first_response_min": 140,
+  "resolved": true,
+  "csat": 1
+ },
+ {
+  "ticket_id": "T-1012",
+  "created_at": "2026-09-01T14:00:00Z",
+  "channel": "app",
+  "text": "rider is not moving on the map, where is my order",
+  "first_response_min": 100,
+  "resolved": true,
+  "csat": 2
+ },
+ {
+  "ticket_id": "T-1013",
+  "created_at": "2026-09-01T14:20:00Z",
+  "channel": "app",
+  "text": "where is my pizza",
+  "first_response_min": 55,
+  "resolved": true,
+  "csat": 4,
+  "label": "order_status"
+ },
+ {
+  "ticket_id": "T-1014",
+  "created_at": "2026-09-01T15:00:00Z",
+  "channel": "whatsapp",
+  "text": "order status please",
+  "first_response_min": 65,
+  "resolved": true,
+  "csat": 3
+ },
+ {
+  "ticket_id": "T-1015",
+  "created_at": "2026-09-01T15:30:00Z",
+  "channel": "app",
+  "text": "when will my order arrive",
+  "first_response_min": 50,
+  "resolved": true,
+  "csat": 4
+ },
+ {
+  "ticket_id": "T-1016",
+  "created_at": "2026-09-01T16:00:00Z",
+  "channel": "app",
+  "text": "is the delivery late today",
+  "first_response_min": 75,
+  "resolved": true,
+  "csat": 3
+ },
+ {
+  "ticket_id": "T-1017",
+  "created_at": "2026-09-01T16:30:00Z",
+  "channel": "app",
+  "text": "where's my food, I'm starving",
+  "first_response_min": 85,
+  "resolved": true,
+  "csat": 2
+ },
+ {
+  "ticket_id": "T-1018",
+  "created_at": "2026-09-01T17:00:00Z",
+  "channel": "web",
+  "text": "track my order",
+  "first_response_min": 40,
+  "resolved": true,
+  "csat": 4
+ },
+ {
+  "ticket_id": "T-1019",
+  "created_at": "2026-09-01T17:30:00Z",
+  "channel": "app",
+  "text": "my food was cold, I want a refund",
+  "first_response_min": 180,
+  "resolved": true,
+  "csat": 1,
+  "label": "refund"
+ },
+ {
+  "ticket_id": "T-1020",
+  "created_at": "2026-09-01T18:00:00Z",
+  "channel": "app",
+  "text": "the raita was missing, refund please to rahul@okaxis",
+  "first_response_min": 160,
+  "resolved": true,
+  "csat": 2,
+  "label": "refund"
+ },
+ {
+  "ticket_id": "T-1021",
+  "created_at": "2026-09-01T18:20:00Z",
+  "channel": "whatsapp",
+  "text": "got the wrong item, money back",
+  "first_response_min": 200,
+  "resolved": false,
+  "csat": null
+ },
+ {
+  "ticket_id": "T-1022",
+  "created_at": "2026-09-01T18:45:00Z",
+  "channel": "app",
+  "text": "refund for order 4519",
+  "first_response_min": 170,
+  "resolved": true,
+  "csat": 2
+ },
+ {
+  "ticket_id": "T-1023",
+  "created_at": "2026-09-01T19:10:00Z",
+  "channel": "web",
+  "text": "the pizza box was damaged and food spilled",
+  "first_response_min": 190,
+  "resolved": true,
+  "csat": 1
+ },
+ {
+  "ticket_id": "T-1024",
+  "created_at": "2026-09-01T19:40:00Z",
+  "channel": "whatsapp",
+  "text": "khana thanda tha, paisa wapas chahiye",
+  "first_response_min": 210,
+  "resolved": true,
+  "csat": 1,
+  "label": "refund"
+ },
+ {
+  "ticket_id": "T-1025",
+  "created_at": "2026-09-01T20:00:00Z",
+  "channel": "app",
+  "text": "change my address to MG Road",
+  "first_response_min": 30,
+  "resolved": true,
+  "csat": 4,
+  "label": "address"
+ },
+ {
+  "ticket_id": "T-1026",
+  "created_at": "2026-09-01T20:20:00Z",
+  "channel": "app",
+  "text": "can I update the delivery address",
+  "first_response_min": 35,
+  "resolved": true,
+  "csat": 4
+ },
+ {
+  "ticket_id": "T-1027",
+  "created_at": "2026-09-01T20:45:00Z",
+  "channel": "web",
+  "text": "wrong location on my order, please change it. +91 91234 56780",
+  "first_response_min": 60,
+  "resolved": true,
+  "csat": 3
+ },
+ {
+  "ticket_id": "T-1028",
+  "created_at": "2026-09-01T21:00:00Z",
+  "channel": "app",
+  "text": "do you have any coupons today",
+  "first_response_min": 25,
+  "resolved": true,
+  "csat": 5,
+  "label": "other"
+ },
+ {
+  "ticket_id": "T-1029",
+  "created_at": "2026-09-01T21:20:00Z",
+  "channel": "web",
+  "text": "how do I delete my account",
+  "first_response_min": 40,
+  "resolved": true,
+  "csat": 3
+ },
+ {
+  "ticket_id": "T-1030",
+  "created_at": "2026-09-01T21:40:00Z",
+  "channel": "app",
+  "text": "the app keeps crashing on login",
+  "first_response_min": 90,
+  "resolved": true,
+  "csat": 2,
+  "label": "other"
+ },
+ {
+  "ticket_id": "T-1031",
+  "created_at": "2026-09-01T22:00:00Z",
+  "channel": "app",
+  "text": "card 4111 1111 1111 1111 was charged twice, refund",
+  "first_response_min": 220,
+  "resolved": true,
+  "csat": 1
+ },
+ {
+  "ticket_id": "T-1032",
+  "created_at": "2026-09-01T22:10:00Z",
+  "channel": "app",
+  "text": "   ",
+  "first_response_min": 10,
+  "resolved": false,
+  "csat": null
+ },
+ {
+  "ticket_id": "T-1033",
+  "created_at": "2026-09-01T22:30:00Z",
+  "channel": "app",
+  "first_response_min": 10,
+  "resolved": false,
+  "csat": null
+ }
+]

@@ -1,0 +1,1119 @@
+[
+ {
+  "level": 0,
+  "title": "From a raw chat export to requirements",
+  "models": [],
+  "output": {
+   "automate_first": [
+    "order_status",
+    "refund",
+    "address"
+   ],
+   "covers": "87% of chats",
+   "functional": [
+    "Answer order status from live order data",
+    "Handle refund requests within policy, escalate the rest",
+    "Change the delivery address before pickup"
+   ],
+   "non_functional": {
+    "reply_time": "under 3 seconds (today: hours)",
+    "cost": "under ₹0.50 per chat",
+    "privacy": "PII redacted before any model sees a chat"
+   },
+   "success": {
+    "resolved_without_human": "80%",
+    "csat": "4.0 or better"
+   }
+  },
+  "steps": [
+   {
+    "fn": "analyze_chats",
+    "line": 39,
+    "label": "ingest the ticket export (synthetic, for the demo)",
+    "values": {
+     "records": 33,
+     "rejected": [
+      {
+       "ticket_id": "T-1033",
+       "reason": "missing text"
+      }
+     ]
+    }
+   },
+   {
+    "fn": "analyze_chats",
+    "line": 43,
+    "label": "clean: normalize, drop empties and duplicates",
+    "values": {
+     "kept": 31,
+     "dropped": {
+      "duplicate": 1,
+      "empty": 1
+     }
+    }
+   },
+   {
+    "fn": "analyze_chats",
+    "line": 47,
+    "label": "redact PII before anything reads the chats",
+    "values": {
+     "masked": {
+      "PHONE": 2,
+      "EMAIL": 1,
+      "UPI": 1,
+      "CARD": 1
+     },
+     "example": "is my food coming or not. call me on [PHONE]"
+    }
+   },
+   {
+    "fn": "analyze_chats",
+    "line": 51,
+    "label": "label every chat with an intent",
+    "values": {
+     "counts": {
+      "order_status": 18,
+      "refund": 6,
+      "other": 4,
+      "address": 3
+     }
+    }
+   },
+   {
+    "fn": "analyze_chats",
+    "line": 55,
+    "label": "check the labeler against human labels",
+    "values": {
+     "checked": 11,
+     "accuracy": "91%",
+     "misses": [
+      {
+       "ticket_id": "T-1024",
+       "text": "khana thanda tha, paisa wapas chahiye",
+       "human": "refund",
+       "labeler": "other"
+      }
+     ]
+    }
+   },
+   {
+    "fn": "analyze_chats",
+    "line": 59,
+    "label": "measure today's baseline per intent",
+    "values": {
+     "baseline": {
+      "order_status": {
+       "share": 0.58,
+       "chats": 18,
+       "avg_first_response_min": 87,
+       "resolved_rate": 0.94,
+       "avg_csat": 2.7
+      },
+      "refund": {
+       "share": 0.19,
+       "chats": 6,
+       "avg_first_response_min": 187,
+       "resolved_rate": 0.83,
+       "avg_csat": 1.4
+      },
+      "other": {
+       "share": 0.13,
+       "chats": 4,
+       "avg_first_response_min": 91,
+       "resolved_rate": 1.0,
+       "avg_csat": 2.8
+      },
+      "address": {
+       "share": 0.1,
+       "chats": 3,
+       "avg_first_response_min": 42,
+       "resolved_rate": 1.0,
+       "avg_csat": 3.7
+      }
+     }
+    }
+   },
+   {
+    "fn": "analyze_chats",
+    "line": 63,
+    "label": "requirements: what to automate first, and how we'll know it works",
+    "values": {
+     "requirements": {
+      "automate_first": [
+       "order_status",
+       "refund",
+       "address"
+      ],
+      "covers": "87% of chats",
+      "functional": [
+       "Answer order status from live order data",
+       "Handle refund requests within policy, escalate the rest",
+       "Change the delivery address before pickup"
+      ],
+      "non_functional": {
+       "reply_time": "under 3 seconds (today: hours)",
+       "cost": "under ₹0.50 per chat",
+       "privacy": "PII redacted before any model sees a chat"
+      },
+      "success": {
+       "resolved_without_human": "80%",
+       "csat": "4.0 or better"
+      }
+     }
+    }
+   },
+   {
+    "fn": "analyze_chats",
+    "line": 67,
+    "label": "seed the eval set with real (redacted) examples",
+    "values": {
+     "golden_candidates": {
+      "order_status": [
+       "where is my order #4521??",
+       "my order is late, it's been an hour",
+       "bhai order kab aayega"
+      ],
+      "refund": [
+       "my food was cold, I want a refund",
+       "the raita was missing, refund please to [UPI]",
+       "got the wrong item, money back"
+      ],
+      "other": [
+       "khana thanda tha, paisa wapas chahiye",
+       "do you have any coupons today",
+       "how do I delete my account"
+      ],
+      "address": [
+       "change my address to MG Road",
+       "can I update the delivery address",
+       "wrong location on my order, please change it. [PHONE]"
+      ]
+     }
+    }
+   }
+  ],
+  "sources": {
+   "analyze_chats": {
+    "start": 35,
+    "code": "def analyze_chats() -> dict:\n    \"\"\"Lesson: understand the problem with data before writing any AI code.\"\"\"\n    # Step 1: read the raw export from the ticketing tool; reject broken records instead of guessing.\n    records, rejected = pipeline.ingest(DATA / \"support_export.json\")\n    trace(\"ingest the ticket export (synthetic, for the demo)\", records=len(records), rejected=rejected)\n\n    # Step 2: real exports are messy. Remove duplicates and empty chats.\n    chats, dropped = pipeline.clean(records)\n    trace(\"clean: normalize, drop empties and duplicates\", kept=len(chats), dropped=dropped)\n\n    # Step 3: privacy first. Mask phones, emails, UPI IDs and cards BEFORE anyone (or any model) reads them.\n    chats, pii = pipeline.redact(chats)\n    trace(\"redact PII before anything reads the chats\", masked=pii, example=next(c.text for c in chats if \"[\" in c.text))\n\n    # Step 4: tag every chat with what the customer wanted.\n    labeled = pipeline.label(chats)\n    trace(\"label every chat with an intent\", counts=dict(Counter(intent for _, intent in labeled)))\n\n    # Step 5: never trust a classifier you haven't measured. Compare against human labels.\n    check = pipeline.labeler_accuracy(labeled)\n    trace(\"check the labeler against human labels\", checked=check[\"checked\"], accuracy=f\"{check['accuracy']:.0%}\", misses=check[\"misses\"])\n\n    # Step 6: today's numbers (response time, CSAT) are the bar the AI has to beat.\n    stats = pipeline.baseline(labeled)\n    trace(\"measure today's baseline per intent\", baseline=stats)\n\n    # Step 7: automate the biggest problems first, and decide how we'll measure success.\n    reqs = pipeline.requirements(stats)\n    trace(\"requirements: what to automate first, and how we'll know it works\", requirements=reqs)\n\n    # Step 8: the same real chats become test cases later (Level 10: evals).\n    golden = pipeline.golden_candidates(labeled)\n    trace(\"seed the eval set with real (redacted) examples\", golden_candidates=golden)\n    return reqs\n"
+   }
+  }
+ },
+ {
+  "level": 1,
+  "title": "Two messages, one stateless API",
+  "models": [
+   "replay"
+  ],
+  "output": "Let me check where your order is!",
+  "steps": [
+   {
+    "fn": "chat",
+    "line": 78,
+    "label": "send the WHOLE history: the API remembers nothing",
+    "values": {
+     "messages": [
+      {
+       "role": "user",
+       "content": "my order is late"
+      }
+     ],
+     "tokens": 4
+    }
+   },
+   {
+    "fn": "chat",
+    "line": 82,
+    "label": "model replied",
+    "values": {
+     "reply": "Sorry about that! Let me help."
+    }
+   },
+   {
+    "fn": "chat",
+    "line": 78,
+    "label": "send the WHOLE history: the API remembers nothing",
+    "values": {
+     "messages": [
+      {
+       "role": "user",
+       "content": "my order is late"
+      },
+      {
+       "role": "assistant",
+       "content": "Sorry about that! Let me help."
+      },
+      {
+       "role": "user",
+       "content": "and where is it now?"
+      }
+     ],
+     "tokens": 16
+    }
+   },
+   {
+    "fn": "chat",
+    "line": 82,
+    "label": "model replied",
+    "values": {
+     "reply": "Let me check where your order is!"
+    }
+   }
+  ],
+  "sources": {
+   "chat": {
+    "start": 74,
+    "code": "def chat(history: list[dict], message: str) -> list[dict]:\n    \"\"\"Lesson: the model remembers nothing. Your backend sends the whole conversation every time.\"\"\"\n    # Add the new message to everything said so far.\n    history = history + [{\"role\": \"user\", \"content\": message}]\n    trace(\"send the WHOLE history: the API remembers nothing\", messages=history, tokens=approx_tokens(history))\n\n    # One API call. The model only knows what's inside `history`, nothing else.\n    reply = llm.complete(history)\n    trace(\"model replied\", reply=reply[\"text\"])\n    # Save the reply too, so the next call includes it. This list IS the memory.\n    return history + [{\"role\": \"assistant\", \"content\": reply[\"text\"]}]\n"
+   }
+  }
+ },
+ {
+  "level": 2,
+  "title": "Reply with a system prompt",
+  "models": [
+   "replay"
+  ],
+  "output": "Sorry about that! 😔 Can you share your order ID? I'll check what I can do.",
+  "steps": [
+   {
+    "fn": "reply_with_rules",
+    "line": 98,
+    "label": "rules are set before the user speaks",
+    "values": {
+     "system": "You are FoodieGo's support agent. Be brief and kind.\nOnly help with orders, refunds and delivery addresses.\nNever promise refunds, free food, coupons or any compensation yourself:\nonly the refund tool decides, and refunds over ₹500 need a human."
+    }
+   },
+   {
+    "fn": "reply_with_rules",
+    "line": 102,
+    "label": "model replied, inside the rules",
+    "values": {
+     "reply": "Sorry about that! 😔 Can you share your order ID? I'll check what I can do."
+    }
+   }
+  ],
+  "sources": {
+   "reply_with_rules": {
+    "start": 96,
+    "code": "def reply_with_rules(message: str) -> str:\n    \"\"\"Lesson: set the bot's role, tone and limits before the user says anything.\"\"\"\n    trace(\"rules are set before the user speaks\", system=SYSTEM_PROMPT)\n\n    # The system prompt travels with every call, separate from what the user typed.\n    reply = llm.complete([{\"role\": \"user\", \"content\": message}], system=SYSTEM_PROMPT)\n    trace(\"model replied, inside the rules\", reply=reply[\"text\"])\n    return reply[\"text\"]\n"
+   }
+  }
+ },
+ {
+  "level": 3,
+  "title": "Route a ticket with structured output",
+  "models": [
+   "replay"
+  ],
+  "output": {
+   "intent": "order_status",
+   "order_id": "4521",
+   "urgency": "high"
+  },
+  "steps": [
+   {
+    "fn": "route_ticket",
+    "line": 120,
+    "label": "the API must return JSON matching this schema",
+    "values": {
+     "schema": {
+      "properties": {
+       "intent": {
+        "enum": [
+         "order_status",
+         "refund",
+         "address",
+         "other"
+        ],
+        "title": "Intent",
+        "type": "string"
+       },
+       "order_id": {
+        "anyOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Order Id"
+       },
+       "urgency": {
+        "enum": [
+         "normal",
+         "high"
+        ],
+        "title": "Urgency",
+        "type": "string"
+       }
+      },
+      "required": [
+       "intent",
+       "order_id",
+       "urgency"
+      ],
+      "title": "Ticket",
+      "type": "object"
+     }
+    }
+   },
+   {
+    "fn": "route_ticket",
+    "line": 123,
+    "label": "model returned",
+    "values": {
+     "raw": {
+      "intent": "order_status",
+      "order_id": "4521",
+      "urgency": "high"
+     }
+    }
+   },
+   {
+    "fn": "route_ticket",
+    "line": 131,
+    "label": "validated in code, safe to route",
+    "values": {
+     "queue": "order_status/high",
+     "ticket": "intent='order_status' order_id='4521' urgency='high'"
+    }
+   }
+  ],
+  "sources": {
+   "route_ticket": {
+    "start": 116,
+    "code": "def route_ticket(message: str) -> Ticket:\n    \"\"\"Lesson: don't ask the model for JSON politely. Enforce a schema, then validate in code.\"\"\"\n    # Turn the Python class into a JSON Schema the API can enforce.\n    schema = Ticket.model_json_schema()\n    trace(\"the API must return JSON matching this schema\", schema=schema)\n\n    reply = llm.complete([{\"role\": \"user\", \"content\": message}], system=\"Extract a support ticket.\", schema=schema)\n    trace(\"model returned\", raw=reply[\"json\"])\n\n    # Trust, but verify: our code checks every field before the ticket goes anywhere.\n    try:\n        ticket = Ticket.model_validate(reply[\"json\"])\n    except ValidationError as err:\n        trace(\"rejected: does not match the schema\", error=str(err))\n        raise\n    trace(\"validated in code, safe to route\", queue=f\"{ticket.intent}/{ticket.urgency}\", ticket=ticket)\n    return ticket\n"
+   }
+  }
+ },
+ {
+  "level": 4,
+  "title": "Answer from the policy docs (RAG)",
+  "models": [
+   "replay"
+  ],
+  "output": "A refund must be requested within 7 days of delivery. Refunds are issued to the original payment method. (§4.2, §4.1)",
+  "steps": [
+   {
+    "fn": "search_policy",
+    "line": 153,
+    "label": "retrieve the most relevant policy sections",
+    "values": {
+     "query": "Can I get a refund? I ordered 2 weeks ago.",
+     "hits": [
+      "§4.2 Refund window",
+      "§4.1 Refund eligibility"
+     ]
+    }
+   },
+   {
+    "fn": "answer_policy",
+    "line": 164,
+    "label": "the model only sees these sections",
+    "values": {
+     "context": "§4.2 Refund window: A refund must be requested within 7 days of delivery. After 7 days, an order is no longer eligible for a refund.\n§4.1 Refund eligibility: Refunds are issued to the original payment method. Coupons and delivery fees are not refundable."
+    }
+   },
+   {
+    "fn": "answer_policy",
+    "line": 168,
+    "label": "grounded answer, with citations",
+    "values": {
+     "reply": "A refund must be requested within 7 days of delivery. Refunds are issued to the original payment method. (§4.2, §4.1)"
+    }
+   }
+  ],
+  "sources": {
+   "search_policy": {
+    "start": 144,
+    "code": "def search_policy(query: str, k: int = 2) -> list[dict]:\n    \"\"\"The \"R\" in RAG: find the few policy sections that match the question.\"\"\"\n    # ponytail: keyword-overlap ranking. Production uses embeddings + a vector DB; same idea, better recall.\n    query_words = set(words(query))\n    ranked = sorted(\n        load(\"policies.json\"),\n        key=lambda s: -sum(words(s[\"title\"] + \" \" + s[\"text\"]).count(w) for w in query_words),\n    )\n    hits = ranked[:k]  # only the top k: less text means cheaper, faster and more focused answers\n    trace(\"retrieve the most relevant policy sections\", query=query, hits=[f\"§{h['id']} {h['title']}\" for h in hits])\n    return hits\n"
+   },
+   "answer_policy": {
+    "start": 157,
+    "code": "def answer_policy(question: str) -> str:\n    \"\"\"Lesson: an open-book exam. Look it up first, then answer only from what you found.\"\"\"\n    # 1. Retrieve: search the real policy docs.\n    hits = search_policy(question)\n    # 2. Augment: paste just those sections into the instructions.\n    context = \"\\n\".join(f\"§{h['id']} {h['title']}: {h['text']}\" for h in hits)\n    system = \"Answer only from the policy sections below, and cite them.\\n\\n\" + context\n    trace(\"the model only sees these sections\", context=context)\n\n    # 3. Generate: the answer is grounded in today's policy, with citations. No retraining needed.\n    reply = llm.complete([{\"role\": \"user\", \"content\": question}], system=system)\n    trace(\"grounded answer, with citations\", reply=reply[\"text\"])\n    return reply[\"text\"]\n"
+   }
+  }
+ },
+ {
+  "level": 5,
+  "title": "Live order status via a tool",
+  "models": [
+   "replay"
+  ],
+  "output": "Your order is 5 minutes away! 🛵",
+  "steps": [
+   {
+    "fn": "answer_with_tool",
+    "line": 201,
+    "label": "model asked for a tool. It can't run anything itself",
+    "values": {
+     "tool_call": {
+      "name": "get_order_status",
+      "args": {
+       "order_id": "4521"
+      }
+     }
+    }
+   },
+   {
+    "fn": "get_order_status",
+    "line": 191,
+    "label": "YOUR code ran the query on the live database",
+    "values": {
+     "result": {
+      "order_id": "4521",
+      "status": "out_for_delivery",
+      "eta_min": 5
+     }
+    }
+   },
+   {
+    "fn": "answer_with_tool",
+    "line": 211,
+    "label": "model turned the result into a reply",
+    "values": {
+     "reply": "Your order is 5 minutes away! 🛵"
+    }
+   }
+  ],
+  "sources": {
+   "answer_with_tool": {
+    "start": 195,
+    "code": "def answer_with_tool(message: str, user_id: str) -> str:\n    \"\"\"Lesson: the model ASKS for a tool. Your code decides whether to run it.\"\"\"\n    messages = [{\"role\": \"user\", \"content\": message}]\n    # 1. The model reads the menu and replies \"please call get_order_status(4521)\".\n    reply = llm.complete(messages, system=SYSTEM_PROMPT, tools=[ORDER_STATUS_TOOL])\n    call = reply[\"tool_call\"]\n    trace(\"model asked for a tool. It can't run anything itself\", tool_call=call)\n\n    # 2. OUR code runs it. Who the user is comes from the login session, never from the model.\n    result = get_order_status(call[\"args\"][\"order_id\"], user_id)\n    # 3. Hand the result back so the model can phrase a friendly answer.\n    messages += [\n        {\"role\": \"assistant\", \"tool_call\": call},\n        {\"role\": \"tool\", \"name\": call[\"name\"], \"content\": json.dumps(result)},\n    ]\n    final = llm.complete(messages, system=SYSTEM_PROMPT, tools=[ORDER_STATUS_TOOL])\n    trace(\"model turned the result into a reply\", reply=final[\"text\"])\n    return final[\"text\"]\n"
+   },
+   "get_order_status": {
+    "start": 182,
+    "code": "def get_order_status(order_id: str, user_id: str) -> dict:\n    \"\"\"The tool itself: plain backend code we wrote. The model never touches the database.\"\"\"\n    # Parameterized SQL (the `?`) so nothing the model sends can inject SQL.\n    row = db.one(\"SELECT user_id, status, eta_min FROM orders WHERE id = ?\", order_id)\n    # Security check in code: you can only see YOUR orders.\n    if row is None or row[\"user_id\"] != user_id:\n        trace(\"blocked: not this customer's order\", order_id=order_id)\n        return {\"error\": \"order not found\"}\n    result = {\"order_id\": order_id, \"status\": row[\"status\"], \"eta_min\": row[\"eta_min\"]}\n    trace(\"YOUR code ran the query on the live database\", result=result)\n    return result\n"
+   }
+  }
+ },
+ {
+  "level": 6,
+  "title": "Three apps, one MCP server",
+  "models": [],
+  "output": [
+   {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+     "tools": [
+      {
+       "name": "get_order",
+       "description": "Look up one of the customer's orders.",
+       "inputSchema": {
+        "type": "object",
+        "properties": {
+         "order_id": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "order_id"
+        ]
+       }
+      },
+      {
+       "name": "search_policy",
+       "description": "Search FoodieGo's policy docs.",
+       "inputSchema": {
+        "type": "object",
+        "properties": {
+         "query": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "query"
+        ]
+       }
+      },
+      {
+       "name": "get_payment",
+       "description": "How the customer paid for an order.",
+       "inputSchema": {
+        "type": "object",
+        "properties": {
+         "order_id": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "order_id"
+        ]
+       }
+      },
+      {
+       "name": "issue_refund",
+       "description": "Refund part of an order.",
+       "inputSchema": {
+        "type": "object",
+        "properties": {
+         "order_id": {
+          "type": "string"
+         },
+         "amount": {
+          "type": "integer"
+         },
+         "reason": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "order_id",
+         "amount",
+         "reason"
+        ]
+       }
+      }
+     ]
+    }
+   },
+   {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": {
+     "content": {
+      "order_id": "4521",
+      "status": "out_for_delivery",
+      "total": 499,
+      "items": [
+       {
+        "name": "Farmhouse pizza",
+        "price": 399
+       },
+       {
+        "name": "Garlic bread",
+        "price": 100
+       }
+      ]
+     }
+    }
+   },
+   {
+    "jsonrpc": "2.0",
+    "id": 3,
+    "result": {
+     "content": {
+      "sections": [
+       "§4.2 Refund window: A refund must be requested within 7 days of delivery. After 7 days, an order is no longer eligible for a refund.",
+       "§4.1 Refund eligibility: Refunds are issued to the original payment method. Coupons and delivery fees are not refundable."
+      ]
+     }
+    }
+   }
+  ],
+  "steps": [
+   {
+    "fn": "handle_mcp",
+    "line": 306,
+    "label": "MCP tools/list",
+    "values": {
+     "client": "mobile bot",
+     "result": {
+      "tools": [
+       {
+        "name": "get_order",
+        "description": "Look up one of the customer's orders.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "order_id": {
+           "type": "string"
+          }
+         },
+         "required": [
+          "order_id"
+         ]
+        }
+       },
+       {
+        "name": "search_policy",
+        "description": "Search FoodieGo's policy docs.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "query": {
+           "type": "string"
+          }
+         },
+         "required": [
+          "query"
+         ]
+        }
+       },
+       {
+        "name": "get_payment",
+        "description": "How the customer paid for an order.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "order_id": {
+           "type": "string"
+          }
+         },
+         "required": [
+          "order_id"
+         ]
+        }
+       },
+       {
+        "name": "issue_refund",
+        "description": "Refund part of an order.",
+        "inputSchema": {
+         "type": "object",
+         "properties": {
+          "order_id": {
+           "type": "string"
+          },
+          "amount": {
+           "type": "integer"
+          },
+          "reason": {
+           "type": "string"
+          }
+         },
+         "required": [
+          "order_id",
+          "amount",
+          "reason"
+         ]
+        }
+       }
+      ]
+     }
+    }
+   },
+   {
+    "fn": "handle_mcp",
+    "line": 306,
+    "label": "MCP tools/call",
+    "values": {
+     "client": "web bot",
+     "result": {
+      "content": {
+       "order_id": "4521",
+       "status": "out_for_delivery",
+       "total": 499,
+       "items": [
+        {
+         "name": "Farmhouse pizza",
+         "price": 399
+        },
+        {
+         "name": "Garlic bread",
+         "price": 100
+        }
+       ]
+      }
+     }
+    }
+   },
+   {
+    "fn": "search_policy",
+    "line": 153,
+    "label": "retrieve the most relevant policy sections",
+    "values": {
+     "query": "refund window",
+     "hits": [
+      "§4.2 Refund window",
+      "§4.1 Refund eligibility"
+     ]
+    }
+   },
+   {
+    "fn": "handle_mcp",
+    "line": 306,
+    "label": "MCP tools/call",
+    "values": {
+     "client": "ops agent",
+     "result": {
+      "content": {
+       "sections": [
+        "§4.2 Refund window: A refund must be requested within 7 days of delivery. After 7 days, an order is no longer eligible for a refund.",
+        "§4.1 Refund eligibility: Refunds are issued to the original payment method. Coupons and delivery fees are not refundable."
+       ]
+      }
+     }
+    }
+   }
+  ],
+  "sources": {
+   "handle_mcp": {
+    "start": 293,
+    "code": "def handle_mcp(request: dict, user_id: str) -> dict:\n    \"\"\"Lesson: one standard plug. Every app asks the same two questions: \"what tools?\" and \"run this one\".\"\"\"\n    # (Real MCP adds transports, auth and more. The contract is the same.)\n    method = request[\"method\"]\n    if method == \"tools/list\":\n        # \"What can you do?\" Any MCP client discovers tools at runtime, with no custom glue code.\n        result = {\"tools\": [{\"name\": n, \"description\": t.description, \"inputSchema\": t.schema} for n, t in TOOLS.items()]}\n    elif method == \"tools/call\":\n        # \"Run this tool with these arguments.\" Same call shape for every tool and every app.\n        tool = TOOLS[request[\"params\"][\"name\"]]\n        result = {\"content\": tool.fn(**request[\"params\"][\"arguments\"], user_id=user_id)}\n    else:\n        return {\"jsonrpc\": \"2.0\", \"id\": request[\"id\"], \"error\": {\"code\": -32601, \"message\": f\"unknown method {method}\"}}\n    trace(f\"MCP {method}\", client=request.get(\"client\"), result=result)\n    return {\"jsonrpc\": \"2.0\", \"id\": request[\"id\"], \"result\": result}\n"
+   },
+   "search_policy": {
+    "start": 144,
+    "code": "def search_policy(query: str, k: int = 2) -> list[dict]:\n    \"\"\"The \"R\" in RAG: find the few policy sections that match the question.\"\"\"\n    # ponytail: keyword-overlap ranking. Production uses embeddings + a vector DB; same idea, better recall.\n    query_words = set(words(query))\n    ranked = sorted(\n        load(\"policies.json\"),\n        key=lambda s: -sum(words(s[\"title\"] + \" \" + s[\"text\"]).count(w) for w in query_words),\n    )\n    hits = ranked[:k]  # only the top k: less text means cheaper, faster and more focused answers\n    trace(\"retrieve the most relevant policy sections\", query=query, hits=[f\"§{h['id']} {h['title']}\" for h in hits])\n    return hits\n"
+   }
+  }
+ },
+ {
+  "level": 7,
+  "title": "Agent loop: refund a missing item",
+  "models": [
+   "replay"
+  ],
+  "output": "So sorry about that! 😔 ₹40 is on its way to your UPI (ref R-1).",
+  "steps": [
+   {
+    "fn": "run_agent",
+    "line": 328,
+    "label": "step 1: model asks for get_order",
+    "values": {
+     "args": {
+      "order_id": "4519"
+     }
+    }
+   },
+   {
+    "fn": "run_agent",
+    "line": 330,
+    "label": "step 1: result goes back to the model",
+    "values": {
+     "result": {
+      "order_id": "4519",
+      "status": "delivered",
+      "total": 349,
+      "items": [
+       {
+        "name": "Chicken biryani",
+        "price": 309
+       },
+       {
+        "name": "Raita",
+        "price": 40
+       }
+      ]
+     }
+    }
+   },
+   {
+    "fn": "run_agent",
+    "line": 328,
+    "label": "step 2: model asks for search_policy",
+    "values": {
+     "args": {
+      "query": "missing item refund"
+     }
+    }
+   },
+   {
+    "fn": "search_policy",
+    "line": 153,
+    "label": "retrieve the most relevant policy sections",
+    "values": {
+     "query": "missing item refund",
+     "hits": [
+      "§4.5 Missing or damaged items",
+      "§4.2 Refund window"
+     ]
+    }
+   },
+   {
+    "fn": "run_agent",
+    "line": 330,
+    "label": "step 2: result goes back to the model",
+    "values": {
+     "result": {
+      "sections": [
+       "§4.5 Missing or damaged items: If an item is missing or damaged, we refund the price of that item. A photo may be requested for damaged items.",
+       "§4.2 Refund window: A refund must be requested within 7 days of delivery. After 7 days, an order is no longer eligible for a refund."
+      ]
+     }
+    }
+   },
+   {
+    "fn": "run_agent",
+    "line": 328,
+    "label": "step 3: model asks for get_payment",
+    "values": {
+     "args": {
+      "order_id": "4519"
+     }
+    }
+   },
+   {
+    "fn": "run_agent",
+    "line": 330,
+    "label": "step 3: result goes back to the model",
+    "values": {
+     "result": {
+      "method": "UPI",
+      "amount": 349
+     }
+    }
+   },
+   {
+    "fn": "run_agent",
+    "line": 328,
+    "label": "step 4: model asks for issue_refund",
+    "values": {
+     "args": {
+      "order_id": "4519",
+      "amount": 40,
+      "reason": "missing raita"
+     }
+    }
+   },
+   {
+    "fn": "issue_refund",
+    "line": 237,
+    "label": "all checks passed in code: refund issued",
+    "values": {
+     "amount": 40,
+     "reason": "missing raita"
+    }
+   },
+   {
+    "fn": "run_agent",
+    "line": 330,
+    "label": "step 4: result goes back to the model",
+    "values": {
+     "result": {
+      "status": "issued",
+      "refund_id": "R-1",
+      "amount": 40
+     }
+    }
+   },
+   {
+    "fn": "run_agent",
+    "line": 323,
+    "label": "step 5: no tool needed, final answer",
+    "values": {
+     "reply": "So sorry about that! 😔 ₹40 is on its way to your UPI (ref R-1)."
+    }
+   }
+  ],
+  "sources": {
+   "run_agent": {
+    "start": 315,
+    "code": "def run_agent(message: str, user_id: str, max_steps: int = 10) -> str:\n    \"\"\"Lesson: an \"agent\" is just this loop. Think, use a tool, look at the result, repeat.\"\"\"\n    messages = [{\"role\": \"user\", \"content\": message}]\n    for step in range(1, max_steps + 1):  # the brake: never loop forever and burn the budget\n        # Think: the model decides the next step based on everything it has seen so far.\n        reply = llm.complete(messages, system=SYSTEM_PROMPT, tools=TOOL_SPECS)\n        if \"tool_call\" not in reply:\n            # Done: no more tools needed, so this is the final answer.\n            trace(f\"step {step}: no tool needed, final answer\", reply=reply[\"text\"])\n            return reply[\"text\"]\n\n        # Act: run the tool it asked for. Identity comes from the session, never from the model.\n        call = reply[\"tool_call\"]\n        trace(f\"step {step}: model asks for {call['name']}\", args=call[\"args\"])\n        result = TOOLS[call[\"name\"]].fn(**call[\"args\"], user_id=user_id)\n        trace(f\"step {step}: result goes back to the model\", result=result)\n        # Observe: add the result to the conversation, then loop and think again.\n        messages += [\n            {\"role\": \"assistant\", \"tool_call\": call},\n            {\"role\": \"tool\", \"name\": call[\"name\"], \"content\": json.dumps(result)},\n        ]\n\n    # Too many steps: something is off, so hand over to a human instead of guessing.\n    trace(\"hit max steps: hand off to a human\", max_steps=max_steps)\n    return \"Let me get a human to help with this.\"\n"
+   },
+   "search_policy": {
+    "start": 144,
+    "code": "def search_policy(query: str, k: int = 2) -> list[dict]:\n    \"\"\"The \"R\" in RAG: find the few policy sections that match the question.\"\"\"\n    # ponytail: keyword-overlap ranking. Production uses embeddings + a vector DB; same idea, better recall.\n    query_words = set(words(query))\n    ranked = sorted(\n        load(\"policies.json\"),\n        key=lambda s: -sum(words(s[\"title\"] + \" \" + s[\"text\"]).count(w) for w in query_words),\n    )\n    hits = ranked[:k]  # only the top k: less text means cheaper, faster and more focused answers\n    trace(\"retrieve the most relevant policy sections\", query=query, hits=[f\"§{h['id']} {h['title']}\" for h in hits])\n    return hits\n"
+   },
+   "issue_refund": {
+    "start": 220,
+    "code": "def issue_refund(order_id: str, amount: int, reason: str, user_id: str) -> dict:\n    \"\"\"Lesson: assume the model WILL be fooled. The money rules live here, in code, where prompts can't reach.\"\"\"\n    order = db.one(\"SELECT user_id, total FROM orders WHERE id = ?\", order_id)\n    # Rule 1: only your own orders.\n    if order is None or order[\"user_id\"] != user_id:\n        return blocked(order_id, \"not this customer's order\")\n    # Rule 2: never refund more than was paid, no matter how nicely the \"grandma\" asks.\n    if amount > order[\"total\"]:\n        return blocked(order_id, f\"₹{amount} is more than the order total of ₹{order['total']}\")\n    # Rule 3: big refunds wait for a human (human-in-the-loop).\n    if amount > APPROVAL_LIMIT:\n        db.run(\"INSERT INTO refunds (order_id, amount, reason, status) VALUES (?, ?, ?, 'pending_approval')\", order_id, amount, reason)\n        trace(\"over the limit: a human must approve\", amount=amount, limit=APPROVAL_LIMIT)\n        return {\"status\": \"pending_approval\"}\n\n    # Every check passed: now, and only now, money moves.\n    refund_id = db.run(\"INSERT INTO refunds (order_id, amount, reason, status) VALUES (?, ?, ?, 'issued')\", order_id, amount, reason)\n    trace(\"all checks passed in code: refund issued\", amount=amount, reason=reason)\n    return {\"status\": \"issued\", \"refund_id\": f\"R-{refund_id}\", \"amount\": amount}\n"
+   }
+  }
+ },
+ {
+  "level": 8,
+  "title": "Compact an 80-message chat",
+  "models": [
+   "replay"
+  ],
+  "output": [
+   {
+    "role": "user",
+    "content": "Pinned facts: {\"order_id\": \"4521\", \"address\": \"MG Road\"}\nEarlier: Customer is chasing late order #4521 and asked about toppings and the address."
+   },
+   {
+    "role": "user",
+    "content": "Can I also get extra cheese? And is the rider close?"
+   },
+   {
+    "role": "assistant",
+    "content": "Sure, let me check that for you."
+   },
+   {
+    "role": "user",
+    "content": "Can I also get extra cheese? And is the rider close?"
+   },
+   {
+    "role": "assistant",
+    "content": "Sure, let me check that for you."
+   },
+   {
+    "role": "user",
+    "content": "Can I also get extra cheese? And is the rider close?"
+   },
+   {
+    "role": "assistant",
+    "content": "Sure, let me check that for you."
+   },
+   {
+    "role": "user",
+    "content": "Can I also get extra cheese? And is the rider close?"
+   },
+   {
+    "role": "assistant",
+    "content": "Sure, let me check that for you."
+   },
+   {
+    "role": "user",
+    "content": "Can I also get extra cheese? And is the rider close?"
+   },
+   {
+    "role": "assistant",
+    "content": "Sure, let me check that for you."
+   }
+  ],
+  "steps": [
+   {
+    "fn": "compact",
+    "line": 361,
+    "label": "pin the facts that must never be forgotten",
+    "values": {
+     "pinned": {
+      "order_id": "4521",
+      "address": "MG Road"
+     }
+    }
+   },
+   {
+    "fn": "compact",
+    "line": 365,
+    "label": "summarize the old turns",
+    "values": {
+     "turns": 70,
+     "summary": "Customer is chasing late order #4521 and asked about toppings and the address."
+    }
+   },
+   {
+    "fn": "compact",
+    "line": 369,
+    "label": "tokens sent per call",
+    "values": {
+     "before": 829,
+     "after": 141
+    }
+   }
+  ],
+  "sources": {
+   "compact": {
+    "start": 348,
+    "code": "def compact(history: list[dict], keep_last: int = 10) -> list[dict]:\n    \"\"\"Lesson: a bigger notebook doesn't help if you can't find the page. Take better notes.\"\"\"\n    if len(history) <= keep_last:\n        return history\n    # Keep the latest messages word for word; everything older gets compressed.\n    old, recent = history[:-keep_last], history[-keep_last:]\n\n    # 1. Pin the key facts (order ID, address) so they can never get lost in the middle.\n    pinned = {}\n    for m in old:\n        for key, pattern in PIN_PATTERNS.items():\n            if match := re.search(pattern, m[\"content\"]):\n                pinned[key] = match.group(1)\n    trace(\"pin the facts that must never be forgotten\", pinned=pinned)\n\n    # 2. Squash 70 old messages into one sentence.\n    summary = llm.complete(old, system=\"Summarize this support chat in one sentence.\")[\"text\"]\n    trace(\"summarize the old turns\", turns=len(old), summary=summary)\n\n    # 3. Next call sends: pinned facts + summary + recent messages. Far fewer tokens, nothing important lost.\n    compacted = [{\"role\": \"user\", \"content\": f\"Pinned facts: {json.dumps(pinned)}\\nEarlier: {summary}\"}] + recent\n    trace(\"tokens sent per call\", before=approx_tokens(history), after=approx_tokens(compacted))\n    return compacted\n"
+   }
+  }
+ },
+ {
+  "level": 9,
+  "title": "Prompt injection vs. guardrails in code",
+  "models": [
+   "replay"
+  ],
+  "output": "I can't process that refund. If something was wrong with your order, I'm happy to check it! 😊",
+  "steps": [
+   {
+    "fn": "run_agent",
+    "line": 328,
+    "label": "step 1: model asks for issue_refund",
+    "values": {
+     "args": {
+      "order_id": "4519",
+      "amount": 10000,
+      "reason": "customer request"
+     }
+    }
+   },
+   {
+    "fn": "blocked",
+    "line": 244,
+    "label": "BLOCKED by code, not by the prompt",
+    "values": {
+     "reason": "₹10000 is more than the order total of ₹349",
+     "logged": true
+    }
+   },
+   {
+    "fn": "run_agent",
+    "line": 330,
+    "label": "step 1: result goes back to the model",
+    "values": {
+     "result": {
+      "status": "blocked",
+      "reason": "₹10000 is more than the order total of ₹349"
+     }
+    }
+   },
+   {
+    "fn": "run_agent",
+    "line": 323,
+    "label": "step 2: no tool needed, final answer",
+    "values": {
+     "reply": "I can't process that refund. If something was wrong with your order, I'm happy to check it! 😊"
+    }
+   }
+  ],
+  "sources": {
+   "run_agent": {
+    "start": 315,
+    "code": "def run_agent(message: str, user_id: str, max_steps: int = 10) -> str:\n    \"\"\"Lesson: an \"agent\" is just this loop. Think, use a tool, look at the result, repeat.\"\"\"\n    messages = [{\"role\": \"user\", \"content\": message}]\n    for step in range(1, max_steps + 1):  # the brake: never loop forever and burn the budget\n        # Think: the model decides the next step based on everything it has seen so far.\n        reply = llm.complete(messages, system=SYSTEM_PROMPT, tools=TOOL_SPECS)\n        if \"tool_call\" not in reply:\n            # Done: no more tools needed, so this is the final answer.\n            trace(f\"step {step}: no tool needed, final answer\", reply=reply[\"text\"])\n            return reply[\"text\"]\n\n        # Act: run the tool it asked for. Identity comes from the session, never from the model.\n        call = reply[\"tool_call\"]\n        trace(f\"step {step}: model asks for {call['name']}\", args=call[\"args\"])\n        result = TOOLS[call[\"name\"]].fn(**call[\"args\"], user_id=user_id)\n        trace(f\"step {step}: result goes back to the model\", result=result)\n        # Observe: add the result to the conversation, then loop and think again.\n        messages += [\n            {\"role\": \"assistant\", \"tool_call\": call},\n            {\"role\": \"tool\", \"name\": call[\"name\"], \"content\": json.dumps(result)},\n        ]\n\n    # Too many steps: something is off, so hand over to a human instead of guessing.\n    trace(\"hit max steps: hand off to a human\", max_steps=max_steps)\n    return \"Let me get a human to help with this.\"\n"
+   },
+   "blocked": {
+    "start": 241,
+    "code": "def blocked(order_id: str, why: str) -> dict:\n    # Write it to the audit log, so the security team can see attacks happening.\n    db.run(\"INSERT INTO audit_log (event, detail) VALUES ('refund_blocked', ?)\", f\"order {order_id}: {why}\")\n    trace(\"BLOCKED by code, not by the prompt\", reason=why, logged=True)\n    return {\"status\": \"blocked\", \"reason\": why}\n"
+   }
+  }
+ },
+ {
+  "level": 10,
+  "title": "Run the golden eval set",
+  "models": [
+   "replay"
+  ],
+  "output": {
+   "score": 0.95,
+   "ship": true,
+   "failures": [
+    {
+     "input": "khana thanda tha, paisa wapas chahiye",
+     "expected": "refund",
+     "got": "other"
+    }
+   ]
+  },
+  "steps": [
+   {
+    "fn": "run_evals",
+    "line": 382,
+    "label": "load the golden set",
+    "values": {
+     "cases": 20,
+     "kinds": {
+      "route": 15,
+      "injection": 5
+     }
+    }
+   },
+   {
+    "fn": "run_evals",
+    "line": 392,
+    "label": "score every case with code checks",
+    "values": {
+     "passed": 19,
+     "total": 20,
+     "failures": [
+      {
+       "input": "khana thanda tha, paisa wapas chahiye",
+       "expected": "refund",
+       "got": "other"
+      }
+     ]
+    }
+   },
+   {
+    "fn": "run_evals",
+    "line": 396,
+    "label": "release gate",
+    "values": {
+     "score": "95%",
+     "gate": "95%",
+     "ship": true
+    }
+   }
+  ],
+  "sources": {
+   "run_evals": {
+    "start": 378,
+    "code": "def run_evals() -> dict:\n    \"\"\"Lesson: unit tests for AI. A fixed set of real cases, scored automatically, before every release.\"\"\"\n    # The golden set: real chats with the answer we expect, plus attack attempts.\n    cases = load(\"golden.json\")\n    trace(\"load the golden set\", cases=len(cases), kinds=dict(Counter(c[\"kind\"] for c in cases)))\n\n    # Run every case through the real system and record what went wrong.\n    failures = []\n    for case in cases:\n        with quiet():\n            passed, got = check_case(case)\n        if not passed:\n            failures.append({\"input\": case[\"input\"], \"expected\": case.get(\"expect\", \"blocked\"), \"got\": got})\n    score = 1 - len(failures) / len(cases)\n    trace(\"score every case with code checks\", passed=len(cases) - len(failures), total=len(cases), failures=failures)\n\n    # The release gate: a number decides, not a feeling or a public benchmark.\n    ship = score >= RELEASE_GATE\n    trace(\"release gate\", score=f\"{score:.0%}\", gate=f\"{RELEASE_GATE:.0%}\", ship=ship)\n    return {\"score\": score, \"ship\": ship, \"failures\": failures}\n"
+   }
+  }
+ }
+]
