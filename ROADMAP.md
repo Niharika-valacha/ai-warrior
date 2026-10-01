@@ -19,10 +19,10 @@
 
 ## Phase 0: Ship v1 publicly
 Get a live link before adding anything.
-- [ ] CI: GitHub Actions runs the API and web tests on every PR
+- [x] CI: GitHub Actions runs the API and web tests on every PR
 - [ ] Deploy the web app (Vercel, free) and the API (Render or Fly.io, free tier)
-- [ ] Free LLM provider chain: Groq → Gemini → replay model, configured in `.env`
-- [ ] Rate limiting on the public API (side quests, Ask live)
+- [x] Free LLM provider chain: Groq → Gemini → replay model, configured in `.env`
+- [x] Rate limiting on the public API (X-ray, side quests, Ask live)
 
 **Done when:** anyone can play v1 at a public URL, and a failed provider falls through to the next one (tested).
 **Shows:** CI/CD, deployment, cost control, model routing and fallbacks.

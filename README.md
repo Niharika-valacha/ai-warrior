@@ -88,11 +88,12 @@ flowchart LR
   UI -- X-ray --> S --> T
   UI -- side quest / ask --> Q
   S -- live levels --> G[Groq<br/>gpt-oss-120b]
-  S -. on failure .-> R[replay model]
+  G -. rate-limited / down .-> GM[Gemini]
+  GM -. both down .-> R[replay model]
   Q --> TV[Tavily web search] --> G
 ```
 
-**Built to survive a live demo:** if Groq is down, a deterministic replay model answers. If the API is down, the game plays from exported snapshots. The show goes on.
+**Built to survive a live demo:** model calls go through a provider chain (Groq → Gemini, both free tiers). If both are rate-limited or down, a deterministic replay model answers. If the API is down, the game plays from exported snapshots. Costly endpoints are rate-limited per client. The show goes on.
 
 **Everything on screen lives in a database.** Questions, options, puns, sidekick lines and screen text can all be edited at `/docs` without touching the frontend. The database itself enforces one right answer per level.
 
@@ -124,6 +125,7 @@ The game runs fully offline. Keys turn on the live parts. Put them in `api/.env`
 | Key | What it unlocks | Where to get it |
 |---|---|---|
 | `GROQ_API_KEY` | Live model calls in X-ray (Levels 1–5 and 7), side quest writing, "Ask live" answers | Free tier at [console.groq.com](https://console.groq.com/keys) |
+| `GEMINI_API_KEY` | Backup model: if Groq is rate-limited or down, calls fall through to Gemini | Free tier at [aistudio.google.com](https://aistudio.google.com/apikey) |
 | `TAVILY_API_KEY` | Web research for side quests and "Ask live" | Free tier at [tavily.com](https://tavily.com) |
 | `ADMIN_TOKEN` | Editing content at `http://localhost:8400/docs` | Make one up, e.g. `python3 -c "import secrets; print(secrets.token_urlsafe(18))"` |
 
