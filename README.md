@@ -124,7 +124,7 @@ npm run dev              # → http://localhost:4000
 
 ## 🛠️ Built with
 
-Next.js · FastAPI · SQLite · Pydantic · Groq · Tavily · characters by Stitch · built with Claude Code
+Next.js · FastAPI · SQLite · Pydantic · Groq · Tavily
 
 <div align="center">
 
