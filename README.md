@@ -69,6 +69,8 @@ Then there's a final boss, and you'll have to meet it yourself. 😏
 
 <img src="screenshots/6-run.png" alt="A level: the incident, the run log, and the system being built on the right" width="100%">
 
+<img src="screenshots/side-quest.png" alt="The RAG side quest: the pain, the idea and what it unlocked, with clickable citations and a live follow-up box" width="100%">
+
 ## 🏗️ Under the hood
 
 ```mermaid
@@ -114,6 +116,18 @@ npm run dev              # → http://localhost:4000
 **Presenter keys:** `1`–`4` answer · `Enter` next · `S` skip · `X` X-ray · `Q` side quest
 
 **Run the tests:** `cd api && .venv/bin/python -m unittest` · `cd web && npm test`
+
+### 🔑 Unlock the live features (optional)
+
+The game runs fully offline. Keys turn on the live parts. Put them in `api/.env`, which git ignores, and never commit them.
+
+| Key | What it unlocks | Where to get it |
+|---|---|---|
+| `GROQ_API_KEY` | Live model calls in X-ray (Levels 1–5 and 7), side quest writing, "Ask live" answers | Free tier at [console.groq.com](https://console.groq.com/keys) |
+| `TAVILY_API_KEY` | Web research for side quests and "Ask live" | Free tier at [tavily.com](https://tavily.com) |
+| `ADMIN_TOKEN` | Editing content at `http://localhost:8400/docs` | Make one up, e.g. `python3 -c "import secrets; print(secrets.token_urlsafe(18))"` |
+
+Then restart the API. Groq's free tier allows about one new side quest per minute; once generated, each one is cached. Before a live session, open every side quest once and run `.venv/bin/python export_snapshots.py` in `api/`, so the game has saved copies if the network drops.
 
 ## 📜 Honest patch notes
 
