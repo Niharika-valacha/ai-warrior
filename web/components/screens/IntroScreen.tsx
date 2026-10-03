@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 import { useContent } from "@/components/ContentProvider";
 import { fill } from "@/lib/text";
@@ -16,6 +17,9 @@ export function IntroScreen({ onStart }: { onStart: () => void }) {
       <button className="btn" onClick={onStart} autoFocus>
         {copy.intro.start}
       </button>
+      <Link className="intro-host" href="/host">
+        Host a multiplayer game, everyone plays from their phone
+      </Link>
     </main>
   );
 }

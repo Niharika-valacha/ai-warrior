@@ -1606,3 +1606,373 @@ kbd {
     padding-inline: 16px;
   }
 }
+
+/* ---------- multiplayer: host lobby ---------- */
+
+.lobby {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(300px, 0.9fr) minmax(0, 1.6fr);
+  gap: 32px;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding-inline: 24px;
+  padding-block: 32px;
+}
+
+.lobby-join {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  justify-items: center;
+  text-align: center;
+  padding: 28px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.lobby-join h1 {
+  font-size: clamp(28px, 3vw, 40px);
+  line-height: 1.1;
+}
+
+.lobby-qr {
+  padding: 8px;
+  background: #fff;
+  border-radius: 12px;
+}
+
+.lobby-qr svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.lobby-or {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.lobby-code {
+  font-family: var(--font-mono), monospace;
+  font-size: clamp(44px, 6vw, 72px);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+
+.lobby-teams {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 16px;
+}
+
+.lobby-count h2 {
+  font-size: clamp(24px, 2.6vw, 34px);
+}
+
+.lobby-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  align-content: start;
+}
+
+.lobby-team {
+  min-width: 0;
+  padding: 14px 16px;
+  background: var(--sunken);
+  border-radius: var(--radius);
+}
+
+.lobby-team h3 {
+  display: flex;
+  justify-content: space-between;
+  font-size: 19px;
+  margin-bottom: 8px;
+}
+
+.lobby-team h3 span {
+  font-family: var(--font-mono), monospace;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.lobby-team ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.lobby-team li {
+  animation: slide-in 0.4s ease-out;
+  overflow-wrap: anywhere;
+}
+
+.lobby-offline {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.lobby-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.lobby-foot label {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.lobby-input {
+  font: inherit;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  width: min(100%, 220px);
+}
+
+.room-badge {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 5;
+  font-family: var(--font-mono), monospace;
+  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 99px;
+  color: var(--ok);
+  background: var(--ok-soft);
+  border: 1px solid #b7e2cd;
+}
+
+.room-badge-warn {
+  color: #8a5a00;
+  background: #fff3d6;
+  border-color: #f0d9a0;
+}
+
+/* ---------- multiplayer: phone ---------- */
+
+.phone {
+  min-height: 100vh;
+  max-width: 560px;
+  margin: 0 auto;
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding-inline: 16px;
+  padding-block: 20px 32px;
+  font-size: 18px;
+}
+
+.phone-join {
+  display: grid;
+  gap: 10px;
+}
+
+.phone-join h1 {
+  font-size: 30px;
+  margin-bottom: 6px;
+}
+
+.phone-join label,
+.phone-teams legend {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--muted);
+}
+
+.phone-input {
+  font: inherit;
+  font-size: 20px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  width: 100%;
+}
+
+.phone-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.phone-code {
+  font-family: var(--font-mono), monospace;
+  font-size: 28px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.phone-teams {
+  border: 0;
+  padding: 0;
+  margin: 6px 0 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.phone-teams legend {
+  margin-bottom: 8px;
+}
+
+.phone-team-btn {
+  font-weight: 600;
+  padding: 14px 10px;
+  border-radius: 10px;
+  border: 2px solid var(--line);
+  background: var(--surface);
+}
+
+.phone-team-btn.on {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.phone-submit {
+  margin-top: 8px;
+  padding-block: 16px;
+  font-size: 20px;
+}
+
+.phone-notice {
+  color: #8a5a00;
+  background: #fff3d6;
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.phone-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.phone-me {
+  font-weight: 700;
+  font-size: 20px;
+  overflow-wrap: anywhere;
+}
+
+.phone-team {
+  font-family: var(--font-mono), monospace;
+  font-size: 14px;
+  padding: 2px 10px;
+  border-radius: 99px;
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.phone-reconnect {
+  text-align: center;
+  font-size: 15px;
+  padding: 6px;
+  border-radius: 8px;
+  color: #8a5a00;
+  background: #fff3d6;
+}
+
+.phone-wait {
+  text-align: center;
+  padding-block: 48px;
+  color: var(--muted);
+}
+
+.phone-big {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.phone-level {
+  display: grid;
+  gap: 14px;
+}
+
+.phone-progress {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.phone-progress .incident-alert {
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+}
+
+.phone-level h2 {
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+.phone-options {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.phone-options li {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 17px;
+}
+
+.phone-wrong {
+  border-color: var(--bad) !important;
+  background: var(--bad-soft) !important;
+  text-decoration: line-through;
+}
+
+.phone-right {
+  border-color: var(--ok) !important;
+  background: var(--ok-soft) !important;
+  font-weight: 600;
+}
+
+.phone-banner {
+  text-align: center;
+  font-weight: 600;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--sunken);
+}
+
+.phone-banner-fail {
+  color: var(--bad);
+  background: var(--bad-soft);
+}
+
+.phone-banner-run,
+.phone-banner-learn {
+  color: var(--ok);
+  background: var(--ok-soft);
+}
+
+@media (max-width: 860px) {
+  .lobby {
+    grid-template-columns: 1fr;
+    padding-inline: 16px;
+  }
+}
+
+.intro-host {
+  color: var(--accent);
+  font-weight: 600;
+}

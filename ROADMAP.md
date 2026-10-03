@@ -27,18 +27,22 @@ Get a live link before adding anything.
 **Done when:** anyone can play v1 at a public URL, and a failed provider falls through to the next one (tested).
 **Shows:** CI/CD, deployment, cost control, model routing and fallbacks.
 
-## Phase 1: Rooms and joining
-- [ ] Host creates a room → big screen shows a QR code and a room code
-- [ ] Players join from their phone: name + team (QA / Frontend / Backend)
-- [ ] WebSocket connection per player; live "who's here" list on the host screen
-- [ ] **Server-authoritative state:** the quiz reducer (`web/lib/quiz.ts`) moves to the server; phones only send actions
-- [ ] Reconnect: refresh the phone mid-game and land back in the same state
-- [ ] Postgres (Neon or Supabase free tier) for rooms, players and sessions
+## Phase 1: Rooms and joining ✅
+- [x] Host creates a room → big screen shows a QR code and a room code (`/host`, `qrcode.react`)
+- [x] Players join from their phone: name + team (QA / Frontend / Backend / Leadership) (`/play`)
+- [x] Live connection per player over Socket.IO; live "who's here" list by team on the host screen
+- [x] **Server-authoritative state:** the quiz rules run on the server (`api/quiz.py`); only the host can drive them
+- [x] Reconnect: refresh the phone mid-game and land back in the same state, as the same player
+- [ ] Postgres for rooms, players and sessions → **moved to Phase 2**, when votes first need to be saved. Rooms live in memory for now.
 
 **Done when:** 50 simulated players join one room and stay connected; a dropped connection recovers in under 2 seconds.
+
+**Result** (`api/scripts/simulate_players.py`, all on one laptop): 50 phones: a host action reaches every phone in **51 ms** (max), dropped phones reconnect in **36 ms** (max) as the same players. 110 phones: under 0.3 s and 0.2 s; at that size the simulator itself is the bottleneck.
+
 **Shows:** real-time systems, state ownership, resilience.
 
 ## Phase 2: Live voting
+- [ ] Postgres (Neon or Supabase free tier) for rooms, players, votes and sessions
 - [ ] Question appears on every phone at the same moment, with a 20-second timer
 - [ ] One vote per player, changeable until the timer ends, then locked by the server
 - [ ] Host screen shows a live bar chart of votes filling in

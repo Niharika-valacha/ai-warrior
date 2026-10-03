@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { useContent } from "./ContentProvider";
-import { INITIAL_QUIZ, createQuizReducer } from "@/lib/quiz";
+import { INITIAL_QUIZ, createQuizReducer, type QuizAction, type QuizState } from "@/lib/quiz";
 import { allSidekickImages } from "@/lib/sidekicks";
 import { BossScreen } from "./screens/BossScreen";
 import { BriefingScreen } from "./screens/BriefingScreen";
@@ -14,16 +14,26 @@ import { SidekickScreen } from "./screens/SidekickScreen";
 import { SkillTreeScreen } from "./screens/SkillTreeScreen";
 import { WinScreen } from "./screens/WinScreen";
 
-type Screen = "intro" | "name" | "sidekick" | "briefing" | "level" | "boss" | "meme" | "tree" | "win";
+export type Screen = "intro" | "name" | "sidekick" | "briefing" | "level" | "boss" | "meme" | "tree" | "win";
+
+type Props = {
+  /** Multiplayer: the server owns the quiz and this sends it actions. Solo games keep the quiz in the browser. */
+  remote?: { quiz: QuizState; dispatch: (action: QuizAction) => void };
+  /** Where to begin; a multiplayer host goes straight to the briefing. */
+  startAt?: Screen;
+  initialName?: string;
+};
 
 /** Screen flow: intro → name → sidekick → briefing → 11 levels → boss → meme → skill tree → win. */
-export default function Game() {
+export default function Game({ remote, startAt = "intro", initialName = "" }: Props) {
   const { levels, sidekicks } = useContent();
   const quizReducer = useMemo(() => createQuizReducer(levels), [levels]);
-  const [screen, setScreen] = useState<Screen>("intro");
-  const [name, setName] = useState("");
+  const [screen, setScreen] = useState<Screen>(startAt);
+  const [name, setName] = useState(initialName);
   const [sidekickId, setSidekickId] = useState(sidekicks[0].id);
-  const [quiz, dispatch] = useReducer(quizReducer, INITIAL_QUIZ);
+  const [localQuiz, localDispatch] = useReducer(quizReducer, INITIAL_QUIZ);
+  const quiz = remote?.quiz ?? localQuiz;
+  const dispatch = remote?.dispatch ?? localDispatch;
   const sidekick = sidekicks.find((s) => s.id === sidekickId) ?? sidekicks[0];
 
   // Preload every expression so mood swaps don't flicker on stage.
@@ -64,7 +74,7 @@ export default function Game() {
           sidekick={sidekick}
           onRestart={() => {
             dispatch({ type: "reset" });
-            setScreen("intro");
+            setScreen(startAt);
           }}
         />
       );

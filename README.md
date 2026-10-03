@@ -71,6 +71,21 @@ Then there's a final boss, and you'll have to meet it yourself. 😏
 
 <img src="screenshots/side-quest.png" alt="The RAG side quest: the pain, the idea and what it unlocked, with clickable citations and a live follow-up box" width="100%">
 
+## 📱 Multiplayer (new)
+
+Everyone plays from their phone. The big screen runs the game; phones follow it live.
+
+1. Start both servers (see below; the API needs `--host 0.0.0.0` so phones can reach it).
+2. Open `http://localhost:4000/host` on the big screen: a room opens with a QR code.
+3. People scan it (same Wi-Fi), enter a name and pick a team.
+4. Start the game. Every pick on the big screen shows up on every phone instantly, and a phone that drops or refreshes rejoins as the same player.
+
+Built on Socket.IO; the server owns the game state, and only the host can drive it. Tested with 50 simulated phones: every action reaches all of them in under 60 ms.
+
+| The big screen | A phone |
+|:---:|:---:|
+| <img src="screenshots/multiplayer-lobby.png" alt="Host lobby: QR code, room code and players by team" width="560"> | <img src="screenshots/multiplayer-phone.png" alt="A phone showing the live question with the wrong pick struck through" width="220"> |
+
 ## 🏗️ Under the hood
 
 ```mermaid
@@ -104,9 +119,9 @@ Requirements: Node 20+, Python 3.9+.
 ```bash
 # The backend
 cd api
-python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 cp .env.example .env     # keys are optional: without them, the replay model and snapshots take over
-.venv/bin/uvicorn main:app --port 8400 --env-file .env
+.venv/bin/uvicorn main:app --host 0.0.0.0 --port 8400 --env-file .env
 
 # The game
 cd web

@@ -1,0 +1,3 @@
+-r requirements.txt
+httpx==0.28.1
+python-socketio[client]==5.17.0  # test clients for the live rooms

@@ -1,4 +1,5 @@
 import snapshot from "@/data/xray-snapshot.json";
+import { apiUrl } from "./apiUrl";
 
 export type XrayStep = { fn: string; line: number; label: string; values: Record<string, unknown> };
 
@@ -13,7 +14,6 @@ export type XrayRun = {
 
 export type XraySource = "live" | "snapshot";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8400";
 const TIMEOUT_MS = 20_000; // live levels make several real model calls
 
 /**
@@ -22,7 +22,7 @@ const TIMEOUT_MS = 20_000; // live levels make several real model calls
  */
 export async function loadXray(level: number): Promise<{ run: XrayRun; source: XraySource }> {
   try {
-    const res = await fetch(`${API_URL}/xray/${level}`, { signal: AbortSignal.timeout(TIMEOUT_MS) });
+    const res = await fetch(`${apiUrl()}/xray/${level}`, { signal: AbortSignal.timeout(TIMEOUT_MS) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return { run: (await res.json()) as XrayRun, source: "live" };
   } catch {
