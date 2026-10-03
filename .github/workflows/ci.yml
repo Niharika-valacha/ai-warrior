@@ -18,8 +18,8 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: api/requirements.txt
-      - run: pip install -r requirements.txt
+          cache-dependency-path: api/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
       # No API keys in CI: every test uses the replay model or fakes, so nothing calls a paid service.
       - run: python -m unittest -v
 

@@ -1,4 +1,6 @@
-"""FoodieGo AI Warrior API. Run: .venv/bin/uvicorn main:app --port 8400 --env-file .env
+"""FoodieGo AI Warrior API. Run: .venv/bin/uvicorn main:app --host 0.0.0.0 --port 8400 --env-file .env
+
+--host 0.0.0.0 lets phones on the same Wi-Fi join multiplayer rooms.
 
 Edit quiz content at http://localhost:8400/docs (writes need the X-Admin-Token header).
 """
@@ -6,25 +8,30 @@ from __future__ import annotations
 
 import os
 import secrets
+import socket
 import sqlite3
 import time
 from typing import Optional
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+import socketio
 from pydantic import BaseModel, Field, ValidationError
 
 import content
 import demos
 import llm
+import realtime
 import sidequests
 import tavily
 from ratelimit import RateLimit
+from rooms import JoinError, rooms
 
-app = FastAPI(title="AI Warrior API")
-app.add_middleware(
+api = FastAPI(title="AI Warrior API")
+api.add_middleware(
     CORSMiddleware,
     allow_origins=os.environ.get("WEB_ORIGINS", "http://localhost:4000").split(","),
+    allow_origin_regex=realtime.LOCAL_ORIGIN.pattern,  # phones on the same Wi-Fi
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
 )
@@ -34,6 +41,8 @@ app.add_middleware(
 XRAY_LIMIT = RateLimit(limit=20, window_s=60)  # live levels make several model calls each
 GENERATE_LIMIT = RateLimit(limit=3, window_s=60)  # writing a side quest: 4 web searches + a long model call
 ASK_LIMIT = RateLimit(limit=10, window_s=60)  # a web search + a model call
+ROOM_LIMIT = RateLimit(limit=10, window_s=60)  # creating rooms
+JOIN_LIMIT = RateLimit(limit=120, window_s=60)  # a whole office can share one public IP
 
 
 def require_admin(x_admin_token: str = Header(default="")) -> None:
@@ -45,19 +54,19 @@ def require_admin(x_admin_token: str = Header(default="")) -> None:
 # ---------------------------------------------------------------- game
 
 
-@app.get("/health")
+@api.get("/health")
 def health() -> dict:
     return {"ok": True}
 
 
-@app.get("/content")
+@api.get("/content")
 def get_content() -> dict:
     """Everything the game shows: levels with their options, and the skill tree."""
     with content.connect() as conn:
         return content.read_all(conn)
 
 
-@app.get("/xray/{level}", dependencies=[Depends(XRAY_LIMIT)])
+@api.get("/xray/{level}", dependencies=[Depends(XRAY_LIMIT)])
 def xray(level: int) -> dict:
     """Run the real code behind a level and return its output, trace and source."""
     if not 0 <= level < len(demos.DEMOS):
@@ -188,26 +197,26 @@ def _write(fn, *args) -> None:
         raise HTTPException(status_code=409, detail=f"Rejected by the database: {err}") from err
 
 
-@app.patch("/levels/{level_id}", dependencies=[Depends(require_admin)])
+@api.patch("/levels/{level_id}", dependencies=[Depends(require_admin)])
 def patch_level(level_id: int, patch: LevelPatch) -> dict:
     _write(content.update_level, level_id, patch.model_dump(exclude_unset=True))
     return {"ok": True}
 
 
-@app.patch("/levels/{level_id}/options/{position}", dependencies=[Depends(require_admin)])
+@api.patch("/levels/{level_id}/options/{position}", dependencies=[Depends(require_admin)])
 def patch_option(level_id: int, position: int, patch: OptionPatch) -> dict:
     _write(content.update_option, level_id, position, patch.model_dump(exclude_unset=True))
     return {"ok": True}
 
 
-@app.get("/skill-topics")
+@api.get("/skill-topics")
 def list_topics() -> list[dict]:
     """Topics with their ids, for editing."""
     with content.connect() as conn:
         return content.topics(conn)
 
 
-@app.post("/skill-topics", dependencies=[Depends(require_admin)])
+@api.post("/skill-topics", dependencies=[Depends(require_admin)])
 def create_topic(topic: TopicIn) -> dict:
     try:
         with content.connect() as conn:
@@ -216,25 +225,25 @@ def create_topic(topic: TopicIn) -> dict:
         raise HTTPException(status_code=409, detail=f"Rejected by the database: {err}") from err
 
 
-@app.patch("/skill-topics/{topic_id}", dependencies=[Depends(require_admin)])
+@api.patch("/skill-topics/{topic_id}", dependencies=[Depends(require_admin)])
 def patch_topic(topic_id: int, patch: TopicPatch) -> dict:
     _write(content.set_topic_unlocked, topic_id, patch.unlocked)
     return {"ok": True}
 
 
-@app.delete("/skill-topics/{topic_id}", dependencies=[Depends(require_admin)])
+@api.delete("/skill-topics/{topic_id}", dependencies=[Depends(require_admin)])
 def remove_topic(topic_id: int) -> dict:
     _write(content.delete_topic, topic_id)
     return {"ok": True}
 
 
-@app.patch("/sidekicks/{sidekick_id}", dependencies=[Depends(require_admin)])
+@api.patch("/sidekicks/{sidekick_id}", dependencies=[Depends(require_admin)])
 def patch_sidekick(sidekick_id: str, patch: SidekickPatch) -> dict:
     _write(content.update_sidekick, sidekick_id, patch.model_dump(exclude_unset=True))
     return {"ok": True}
 
 
-@app.put("/copy/{key}", dependencies=[Depends(require_admin)])
+@api.put("/copy/{key}", dependencies=[Depends(require_admin)])
 def put_copy(key: str, value: dict) -> dict:
     """Replace one screen's text. GET /content shows the current value to start from."""
     model = COPY_MODELS.get(key)
@@ -276,7 +285,7 @@ def _ai_call(fn, *args):
         raise HTTPException(status_code=502, detail="The model's side quest failed validation twice") from err
 
 
-@app.get("/side-quests/{level_id}")
+@api.get("/side-quests/{level_id}")
 def get_side_quest(level_id: int, request: Request) -> dict:
     """Cached side quest, or research and write it now (first open takes ~10-20s)."""
     with content.connect() as conn:
@@ -288,7 +297,7 @@ def get_side_quest(level_id: int, request: Request) -> dict:
         return _ai_call(sidequests.generate, conn, level)
 
 
-@app.post("/side-quests/{level_id}/refresh", dependencies=[Depends(GENERATE_LIMIT)])
+@api.post("/side-quests/{level_id}/refresh", dependencies=[Depends(GENERATE_LIMIT)])
 def refresh_side_quest(level_id: int) -> dict:
     """Throw away the cached side quest and research it again."""
     wait = REFRESH_COOLDOWN_S - (time.monotonic() - _last_refresh.get(level_id, float("-inf")))
@@ -299,9 +308,59 @@ def refresh_side_quest(level_id: int) -> dict:
         return _ai_call(sidequests.generate, conn, _level(conn, level_id))
 
 
-@app.post("/side-quests/{level_id}/ask", dependencies=[Depends(ASK_LIMIT)])
+@api.post("/side-quests/{level_id}/ask", dependencies=[Depends(ASK_LIMIT)])
 def ask_follow_up(level_id: int, body: Question) -> dict:
     """Answer a live audience question from fresh web results. Not cached: every question is new."""
     with content.connect() as conn:
         level = _level(conn, level_id)
     return _ai_call(sidequests.ask, level, body.question.strip())
+
+
+# ---------------------------------------------------------------- multiplayer rooms (live updates go over Socket.IO)
+
+
+class JoinRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=40)
+    team: str
+
+
+def join_base_url() -> str:
+    """Where phones open the game: PUBLIC_WEB_URL if set, else this laptop's address on the local network."""
+    if os.environ.get("PUBLIC_WEB_URL"):
+        return os.environ["PUBLIC_WEB_URL"].rstrip("/")
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+        try:
+            s.connect(("10.255.255.255", 1))  # no packet is sent; this just picks the outgoing interface
+            ip = s.getsockname()[0]
+        except OSError:
+            ip = "127.0.0.1"
+    return f"http://{ip}:4000"
+
+
+@api.post("/rooms", dependencies=[Depends(ROOM_LIMIT)])
+def create_room() -> dict:
+    """Start a multiplayer game. The host token is the host's identity: keep it secret."""
+    room = rooms.create()
+    return {"code": room.code, "hostToken": room.host_token, "joinUrl": f"{join_base_url()}/play?room={room.code}"}
+
+
+@api.get("/rooms/{code}")
+def get_room(code: str) -> dict:
+    room = rooms.get(code)
+    if room is None:
+        raise HTTPException(status_code=404, detail="No room with that code")
+    return room.public()
+
+
+@api.post("/rooms/{code}/players", dependencies=[Depends(JOIN_LIMIT)])
+def join_room(code: str, body: JoinRequest) -> dict:
+    """Join from a phone. The returned token lets the phone reconnect as the same player."""
+    try:
+        player = rooms.join(code, body.name, body.team)
+    except JoinError as err:
+        raise HTTPException(status_code=400, detail=str(err)) from err
+    return {"code": code.strip().upper(), "playerId": player.id, "name": player.name, "team": player.team, "token": player.token}
+
+
+# HTTP routes go to FastAPI; /socket.io/ goes to the live rooms.
+app = socketio.ASGIApp(realtime.sio, other_asgi_app=api)
