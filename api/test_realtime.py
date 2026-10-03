@@ -8,12 +8,14 @@ import unittest
 from pathlib import Path
 
 os.environ.setdefault("CONTENT_DB", str(Path(tempfile.mkdtemp()) / "content.db"))
+os.environ.setdefault("DATABASE_URL", f"sqlite+aiosqlite:///{Path(tempfile.mkdtemp()) / 'game.db'}")
 
 import httpx  # noqa: E402
 import socketio  # noqa: E402
 import uvicorn  # noqa: E402
 
 import main  # noqa: E402
+import realtime  # noqa: E402
 
 
 def free_port() -> int:
@@ -36,15 +38,19 @@ class Client:
 
     def __init__(self, base, code, token):
         self.room = None
+        self.mine = None  # private "your vote" message after a reconnect
         self.sio = socketio.Client(reconnection=False)
         self.sio.on("room", lambda data: setattr(self, "room", data))
+        self.sio.on("vote:mine", lambda data: setattr(self, "mine", data))
         self.sio.connect(base, auth={"room": code, "token": token}, transports=["websocket"])
 
     def online_names(self):
         return sorted(p["name"] for p in self.room["players"] if p["online"]) if self.room else []
 
 
-class RealtimeTest(unittest.TestCase):
+class LiveServerTest(unittest.TestCase):
+    """Starts the real API (HTTP + Socket.IO) once per class; each test gets a fresh room."""
+
     @classmethod
     def setUpClass(cls):
         port = free_port()
@@ -54,6 +60,9 @@ class RealtimeTest(unittest.TestCase):
         cls.thread.start()
         wait_for(lambda: cls.server.started, timeout=10)
         cls.http = httpx.Client(base_url=cls.base)
+        # Every test opens a room from 127.0.0.1; lift the per-IP limits for the test server only.
+        for limit in (main.ROOM_LIMIT, main.JOIN_LIMIT):
+            limit.limit = 10_000
 
     @classmethod
     def tearDownClass(cls):
@@ -81,6 +90,8 @@ class RealtimeTest(unittest.TestCase):
         self.assertEqual(res.status_code, 200, res.text)
         return res.json()
 
+
+class RealtimeTest(LiveServerTest):
     def test_players_join_and_the_host_sees_them_live(self):
         host = self.connect(self.host_token)
         for name in ("Asha", "Ben", "Chen"):
@@ -129,6 +140,86 @@ class RealtimeTest(unittest.TestCase):
         self.assertEqual(self.http.post("/rooms/NOPE99/players", json={"name": "A", "team": "QA"}).status_code, 400)
         self.assertEqual(self.join("Asha")["name"], "Asha")
         self.assertEqual(self.join("asha")["name"], "asha 2")  # duplicate names get a number
+
+
+class VotingTest(LiveServerTest):
+    """Phones vote; the server counts, closes and plays the room's pick."""
+
+    def start_game(self, *names):
+        host = self.connect(self.host_token)
+        phones = [self.connect(self.join(n)["token"]) for n in names]
+        wait_for(lambda: len(host.online_names()) == len(names))
+        host.sio.emit("host:start")
+        wait_for(lambda: host.room["status"] == "playing")
+        return host, phones
+
+    def open_vote(self, host):
+        host.sio.emit("host:open_vote")
+        wait_for(lambda: host.room["vote"] and host.room["vote"]["open"])
+
+    def vote(self, phone, option):
+        return phone.sio.call("vote", {"option": option}, timeout=3)
+
+    def test_everyone_votes_and_the_room_pick_plays(self):
+        host, phones = self.start_game("Asha", "Ben", "Chen")
+        self.open_vote(host)
+        for phone, option in zip(phones, (0, 0, 3)):  # A is wrong on level 0, D is right
+            self.assertEqual(self.vote(phone, option), {"ok": True, "option": option})
+        wait_for(lambda: not host.room["vote"]["open"])  # closes as soon as everyone has voted
+        result = host.room["vote"]["result"]
+        self.assertEqual((result["counts"], result["top"], result["participation"]), ([2, 0, 0, 1], 0, 1.0))
+        self.assertEqual(host.room["quiz"]["phase"], "fail")  # the room picked A, so it breaks on screen
+
+    def test_changing_your_mind_moves_your_vote(self):
+        host, (asha, ben) = self.start_game("Asha", "Ben")
+        self.open_vote(host)
+        self.vote(asha, 0)
+        self.vote(asha, 3)
+        wait_for(lambda: host.room["vote"]["counts"] == [0, 0, 0, 1])
+        self.vote(ben, 3)
+        wait_for(lambda: not host.room["vote"]["open"])
+        self.assertEqual(host.room["quiz"]["phase"], "run")  # the room got it right
+
+    def test_the_timer_closes_the_vote_and_late_votes_are_refused(self):
+        realtime.VOTE_SECONDS = 1
+        self.addCleanup(setattr, realtime, "VOTE_SECONDS", 20)
+        host, (asha, ben) = self.start_game("Asha", "Ben")
+        self.open_vote(host)
+        self.vote(asha, 3)
+        wait_for(lambda: not host.room["vote"]["open"], timeout=4)
+        self.assertEqual(host.room["vote"]["result"]["participation"], 0.5)
+        self.assertEqual(self.vote(ben, 0), {"ok": False, "error": "Voting is closed"})
+
+    def test_the_host_cannot_override_an_open_vote(self):
+        host, (asha, ben) = self.start_game("Asha", "Ben")
+        self.open_vote(host)
+        host.sio.emit("host:action", {"type": "pick", "option": 3})
+        self.vote(asha, 0)
+        wait_for(lambda: host.room["vote"]["voters"] == 1)
+        self.assertEqual(host.room["quiz"]["phase"], "ask")
+
+    def test_a_phone_that_reconnects_mid_vote_gets_its_pick_back(self):
+        host, (asha, ben) = self.start_game("Asha", "Ben")
+        self.open_vote(host)
+        self.vote(asha, 2)
+        asha.sio.disconnect()
+        again = self.connect(self.asha_token)
+        wait_for(lambda: again.mine is not None)
+        self.assertEqual(again.mine["option"], 2)
+
+    def test_votes_stay_anonymous(self):
+        host, (asha, ben) = self.start_game("Asha", "Ben")
+        self.open_vote(host)
+        self.vote(asha, 1)
+        wait_for(lambda: host.room["vote"]["voters"] == 1)
+        self.assertNotIn("choices", str(host.room))
+        self.assertTrue(all(set(p) == {"id", "name", "team", "online"} for p in host.room["players"]))
+
+    def join(self, name, team="QA"):
+        joined = super().join(name, team)
+        if name == "Asha":
+            self.asha_token = joined["token"]
+        return joined
 
 
 if __name__ == "__main__":

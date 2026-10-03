@@ -11,6 +11,7 @@ import secrets
 import socket
 import sqlite3
 import time
+from contextlib import asynccontextmanager
 from typing import Optional
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
@@ -27,7 +28,16 @@ import tavily
 from ratelimit import RateLimit
 from rooms import JoinError, rooms
 
-api = FastAPI(title="AI Warrior API")
+@asynccontextmanager
+async def lifespan(_):
+    # SQLite (no Docker) gets its tables here; Postgres is migrated with `alembic upgrade head`.
+    if realtime.store.engine.dialect.name == "sqlite":
+        await realtime.store.create_tables()
+    yield
+    await realtime.store.close()
+
+
+api = FastAPI(title="AI Warrior API", lifespan=lifespan)
 api.add_middleware(
     CORSMiddleware,
     allow_origins=os.environ.get("WEB_ORIGINS", "http://localhost:4000").split(","),
@@ -338,9 +348,10 @@ def join_base_url() -> str:
 
 
 @api.post("/rooms", dependencies=[Depends(ROOM_LIMIT)])
-def create_room() -> dict:
+async def create_room() -> dict:
     """Start a multiplayer game. The host token is the host's identity: keep it secret."""
     room = rooms.create()
+    await realtime.store.add_room(room.code)
     return {"code": room.code, "hostToken": room.host_token, "joinUrl": f"{join_base_url()}/play?room={room.code}"}
 
 
@@ -353,12 +364,13 @@ def get_room(code: str) -> dict:
 
 
 @api.post("/rooms/{code}/players", dependencies=[Depends(JOIN_LIMIT)])
-def join_room(code: str, body: JoinRequest) -> dict:
+async def join_room(code: str, body: JoinRequest) -> dict:
     """Join from a phone. The returned token lets the phone reconnect as the same player."""
     try:
         player = rooms.join(code, body.name, body.team)
     except JoinError as err:
         raise HTTPException(status_code=400, detail=str(err)) from err
+    await realtime.store.add_player(code.strip().upper(), player.id, player.name, player.team)
     return {"code": code.strip().upper(), "playerId": player.id, "name": player.name, "team": player.team, "token": player.token}
 
 
