@@ -10,7 +10,7 @@ import sqlite3
 import time
 from typing import Optional
 
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, ValidationError
 
@@ -19,6 +19,7 @@ import demos
 import llm
 import sidequests
 import tavily
+from ratelimit import RateLimit
 
 app = FastAPI(title="AI Warrior API")
 app.add_middleware(
@@ -27,6 +28,12 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
 )
+
+
+# Limits per client IP on endpoints that call paid or rate-limited services.
+XRAY_LIMIT = RateLimit(limit=20, window_s=60)  # live levels make several model calls each
+GENERATE_LIMIT = RateLimit(limit=3, window_s=60)  # writing a side quest: 4 web searches + a long model call
+ASK_LIMIT = RateLimit(limit=10, window_s=60)  # a web search + a model call
 
 
 def require_admin(x_admin_token: str = Header(default="")) -> None:
@@ -50,7 +57,7 @@ def get_content() -> dict:
         return content.read_all(conn)
 
 
-@app.get("/xray/{level}")
+@app.get("/xray/{level}", dependencies=[Depends(XRAY_LIMIT)])
 def xray(level: int) -> dict:
     """Run the real code behind a level and return its output, trace and source."""
     if not 0 <= level < len(demos.DEMOS):
@@ -270,14 +277,18 @@ def _ai_call(fn, *args):
 
 
 @app.get("/side-quests/{level_id}")
-def get_side_quest(level_id: int) -> dict:
+def get_side_quest(level_id: int, request: Request) -> dict:
     """Cached side quest, or research and write it now (first open takes ~10-20s)."""
     with content.connect() as conn:
         level = _level(conn, level_id)
-        return sidequests.cached(conn, level_id) or _ai_call(sidequests.generate, conn, level)
+        quest = sidequests.cached(conn, level_id)
+        if quest:
+            return quest  # cached reads are free, so they're not rate-limited
+        GENERATE_LIMIT(request)
+        return _ai_call(sidequests.generate, conn, level)
 
 
-@app.post("/side-quests/{level_id}/refresh")
+@app.post("/side-quests/{level_id}/refresh", dependencies=[Depends(GENERATE_LIMIT)])
 def refresh_side_quest(level_id: int) -> dict:
     """Throw away the cached side quest and research it again."""
     wait = REFRESH_COOLDOWN_S - (time.monotonic() - _last_refresh.get(level_id, float("-inf")))
@@ -288,7 +299,7 @@ def refresh_side_quest(level_id: int) -> dict:
         return _ai_call(sidequests.generate, conn, _level(conn, level_id))
 
 
-@app.post("/side-quests/{level_id}/ask")
+@app.post("/side-quests/{level_id}/ask", dependencies=[Depends(ASK_LIMIT)])
 def ask_follow_up(level_id: int, body: Question) -> dict:
     """Answer a live audience question from fresh web results. Not cached: every question is new."""
     with content.connect() as conn:

@@ -140,15 +140,16 @@ Rules:
 Concept from the game: {concept}"""
 
 
-def write(level: dict, sources: list[dict], complete: Complete = llm.generate) -> SideQuest:
-    """Ask the model for a side quest; validate it; retry once with the validation errors."""
+def write(level: dict, sources: list[dict], complete: Complete = llm.generate) -> tuple[SideQuest, str]:
+    """Ask the model for a side quest; validate it; retry once with the validation errors.
+    Returns the quest and the model that wrote it."""
     system = WRITER.format(concept=json.dumps(level["concept"], ensure_ascii=False))
     messages = [{"role": "user", "content": f"Concept: {level['concept']['name']}\n\nSources:\n{numbered(sources)}"}]
     schema = SideQuest.model_json_schema(by_alias=True)
     for attempt in range(2):
         reply = complete(messages, system=system, schema=schema)
         try:
-            return SideQuest.model_validate(reply["json"])
+            return SideQuest.model_validate(reply["json"]), reply.get("model", "unknown")
         except ValidationError as err:
             if attempt:
                 raise
@@ -178,7 +179,7 @@ def cached(conn, level_id: int) -> Optional[dict]:
 def generate(conn, level: dict, search: Search = tavily.search, complete: Complete = llm.generate) -> dict:
     """Research, write, validate and cache the side quest for one level. Overwrites any cached version."""
     sources = research(level["concept"]["name"], search)
-    quest = write(level, sources, complete)
+    quest, model = write(level, sources, complete)
     cited = [{"n": s["n"], "title": s["title"], "url": s["url"]} for s in sources]
     conn.execute(
         "INSERT OR REPLACE INTO side_quests (level_id, content, sources, model, generated_at) VALUES (?, ?, ?, ?, ?)",
@@ -186,7 +187,7 @@ def generate(conn, level: dict, search: Search = tavily.search, complete: Comple
             level["id"],
             quest.model_dump_json(by_alias=True),
             json.dumps(cited, ensure_ascii=False),
-            llm.model_name(),
+            model,
             datetime.now(timezone.utc).isoformat(timespec="seconds"),
         ),
     )
@@ -211,5 +212,5 @@ def ask(level: dict, question: str, search: Search = tavily.search, complete: Co
         "question": question,
         "answer": reply["text"],
         "sources": [{"n": s["n"], "title": s["title"], "url": s["url"]} for s in sources],
-        "model": llm.model_name(),
+        "model": reply.get("model", "unknown"),
     }
