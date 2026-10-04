@@ -1,0 +1,21 @@
+# Local Postgres for multiplayer data. Start: docker compose up -d   Stop: docker compose down
+name: ai-warrior
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: aiwarrior
+      POSTGRES_PASSWORD: aiwarrior # local development only
+      POSTGRES_DB: aiwarrior
+    ports:
+      - "127.0.0.1:5435:5432" # 5435: other local projects already use 5433/5434; laptop-only
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aiwarrior"]
+      interval: 2s
+      retries: 15
+
+volumes:
+  pgdata:

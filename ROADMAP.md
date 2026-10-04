@@ -41,16 +41,19 @@ Get a live link before adding anything.
 
 **Shows:** real-time systems, state ownership, resilience.
 
-## Phase 2: Live voting
-- [ ] Postgres (Neon or Supabase free tier) for rooms, players, votes and sessions
-- [ ] Question appears on every phone at the same moment, with a 20-second timer
-- [ ] One vote per player, changeable until the timer ends, then locked by the server
-- [ ] Host screen shows a live bar chart of votes filling in
-- [ ] Reveal: the room's top answer plays out (fail script or run log) on the big screen
-- [ ] Participation rate recorded for every question
+## Phase 2: Live voting ✅
+- [x] Postgres (Docker Compose locally) for rooms, players, rounds and votes; SQLAlchemy + Alembic; SQLite fallback
+- [x] Question appears on every phone at the same moment, with a 20-second timer (synced to the server clock)
+- [x] One vote per player, changeable until the timer ends, then locked by the server
+- [x] Host screen shows live vote bars and "12 of 15 voted"; votes stay anonymous (counts only)
+- [x] Reveal: the room's top answer plays out (fail script or run log) on the big screen
+- [x] Participation rate recorded for every question (`rounds.voters / rounds.eligible`)
 
 **Done when:** concurrency tests prove no double votes and no lost votes; votes reach the host screen in under 200 ms locally.
-**Shows:** correctness under concurrency, event design.
+
+**Result:** 50 phones voting at the same instant: each vote acknowledged in 39 ms (p50), **all 50 counted on the big screen in 102 ms**, none lost or doubled (saved to Postgres). Concurrency tests run on SQLite and Postgres in CI, including closing a round in the middle of a 60-vote storm.
+
+**Shows:** correctness under concurrency, event design, database constraints doing the work.
 
 ## Phase 3: Scoring and leaderboards
 - [ ] Points for a right answer + speed bonus; first-try streaks

@@ -10,6 +10,7 @@ import { ConceptCard } from "@/components/level/ConceptCard";
 import { OptionList } from "@/components/level/OptionList";
 import { RunTerminal } from "@/components/level/RunTerminal";
 import { SideQuestPanel } from "@/components/level/SideQuestPanel";
+import { VoteBar, type Multiplayer } from "@/components/level/VoteBar";
 import { XrayPanel } from "@/components/level/XrayPanel";
 import { GameLayout } from "@/components/shell/GameLayout";
 
@@ -19,9 +20,10 @@ type Props = {
   name: string;
   sidekick: Sidekick;
   onComplete: () => void;
+  multiplayer?: Multiplayer; // phones vote; absent in solo games
 };
 
-export function LevelScreen({ quiz, dispatch, name, sidekick, onComplete }: Props) {
+export function LevelScreen({ quiz, dispatch, name, sidekick, onComplete, multiplayer }: Props) {
   const { levels, copy } = useContent();
   const { lvl, phase, picked } = quiz;
   const level = levels[lvl];
@@ -33,6 +35,9 @@ export function LevelScreen({ quiz, dispatch, name, sidekick, onComplete }: Prop
   const xrayOpen = xrayLevel === lvl;
   const [questLevel, setQuestLevel] = useState<number | null>(null);
   const questOpen = questLevel === lvl;
+  // Only the vote for the question on screen counts; a result from the previous level is ignored.
+  const vote = multiplayer?.vote && multiplayer.vote.level === lvl ? multiplayer.vote : null;
+  const voting = Boolean(vote?.open);
   const lines = terminalLines(level, quiz);
   // "run" and "learn" share one log, so moving to learn must not restart it.
   const reveal = useReveal(lines, `${lvl}-${phase === "learn" ? "run" : phase}-${picked}`);
@@ -58,7 +63,11 @@ export function LevelScreen({ quiz, dispatch, name, sidekick, onComplete }: Prop
       return true;
     }
     if (xrayOpen || questOpen) return false; // an open panel owns the keyboard
-    if (choosing && ["1", "2", "3", "4"].includes(key)) {
+    if (key === "v" && multiplayer && phase === "ask" && !vote) {
+      multiplayer.openVote();
+      return true;
+    }
+    if (choosing && !voting && ["1", "2", "3", "4"].includes(key)) {
       dispatch({ type: "pick", option: Number(key) - 1 });
       return true;
     }
@@ -102,11 +111,15 @@ export function LevelScreen({ quiz, dispatch, name, sidekick, onComplete }: Prop
 
       <h2 className="question">{level.question}</h2>
 
+      {multiplayer && (phase === "ask" || vote?.result) && <VoteBar {...multiplayer} vote={vote} />}
+
       {choosing ? (
         <OptionList
           options={level.options}
           onlyCorrect={phase === "retry"}
           onPick={(i) => dispatch({ type: "pick", option: i })}
+          votes={phase === "ask" && vote ? vote.counts : undefined}
+          locked={voting}
         />
       ) : (
         <RunTerminal

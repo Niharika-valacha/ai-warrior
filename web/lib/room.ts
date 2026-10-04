@@ -6,12 +6,28 @@ import type { QuizAction, QuizState } from "./quiz";
 
 export type RoomPlayer = { id: string; name: string; team: string; online: boolean };
 
+export type VoteResult = { counts: number[]; top: number | null; voters: number; participation: number };
+
+/** The question currently put to the room. Only counts are shared; who voted what stays on the server. */
+export type RoomVote = {
+  roundId: number;
+  level: number;
+  open: boolean;
+  closesAt: number; // server clock, epoch ms
+  counts: number[]; // votes for A–D
+  voters: number;
+  eligible: number;
+  result: VoteResult | null;
+};
+
 export type RoomState = {
   code: string;
   status: "lobby" | "playing" | "ended";
   quiz: QuizState;
   players: RoomPlayer[];
   teams: string[];
+  vote: RoomVote | null;
+  serverNow: number; // server clock when this was sent, epoch ms
 };
 
 /** Who you are in a room. The token is your identity: it's what lets you reconnect as yourself. */
@@ -69,6 +85,8 @@ export function clearSeat(role: "host" | "player") {
 export function useRoom(seat: Seat | null) {
   const [room, setRoom] = useState<RoomState | null>(null);
   const [connection, setConnection] = useState<Connection>("connecting");
+  const [clockOffset, setClockOffset] = useState(0); // server clock minus this device's clock, in ms
+  const [myVote, setMyVote] = useState<{ roundId: number; option: number } | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const code = seat?.code;
   const token = seat?.token;
@@ -85,7 +103,11 @@ export function useRoom(seat: Seat | null) {
     socket.on("connect", () => setConnection("connected"));
     socket.on("disconnect", () => setConnection("reconnecting"));
     socket.on("connect_error", () => setConnection(socket.active ? "reconnecting" : "refused"));
-    socket.on("room", (state: RoomState) => setRoom(state));
+    socket.on("room", (state: RoomState) => {
+      setRoom(state);
+      setClockOffset(state.serverNow - Date.now());
+    });
+    socket.on("vote:mine", (mine: { roundId: number; option: number }) => setMyVote(mine));
     return () => {
       socket.disconnect();
       socketRef.current = null;
@@ -99,5 +121,18 @@ export function useRoom(seat: Seat | null) {
   /** Host only: the server applies it with the quiz rules and broadcasts the result. */
   const hostAction = useCallback((action: QuizAction) => emit("host:action", action), [emit]);
 
-  return { room, connection, emit, hostAction };
+  /** Player: vote or change your vote. Resolves with the server's verdict. */
+  const vote = useCallback(async (roundId: number, option: number) => {
+    const socket = socketRef.current;
+    if (!socket) return { ok: false, error: "Not connected" };
+    try {
+      const ack = (await socket.timeout(3000).emitWithAck("vote", { option })) as { ok: boolean; error?: string };
+      if (ack.ok) setMyVote({ roundId, option });
+      return ack;
+    } catch {
+      return { ok: false, error: "No answer from the server. Try again." };
+    }
+  }, []);
+
+  return { room, connection, emit, hostAction, vote, myVote, clockOffset };
 }

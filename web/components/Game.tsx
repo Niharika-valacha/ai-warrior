@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { useContent } from "./ContentProvider";
+import type { Multiplayer } from "./level/VoteBar";
 import { INITIAL_QUIZ, createQuizReducer, type QuizAction, type QuizState } from "@/lib/quiz";
 import { allSidekickImages } from "@/lib/sidekicks";
 import { BossScreen } from "./screens/BossScreen";
@@ -18,7 +19,7 @@ export type Screen = "intro" | "name" | "sidekick" | "briefing" | "level" | "bos
 
 type Props = {
   /** Multiplayer: the server owns the quiz and this sends it actions. Solo games keep the quiz in the browser. */
-  remote?: { quiz: QuizState; dispatch: (action: QuizAction) => void };
+  remote?: { quiz: QuizState; dispatch: (action: QuizAction) => void; multiplayer: Multiplayer };
   /** Where to begin; a multiplayer host goes straight to the briefing. */
   startAt?: Screen;
   initialName?: string;
@@ -59,7 +60,14 @@ export default function Game({ remote, startAt = "intro", initialName = "" }: Pr
       return <BriefingScreen name={name} sidekick={sidekick} onStart={() => setScreen("level")} />;
     case "level":
       return (
-        <LevelScreen quiz={quiz} dispatch={dispatch} name={name} sidekick={sidekick} onComplete={() => setScreen("boss")} />
+        <LevelScreen
+          quiz={quiz}
+          dispatch={dispatch}
+          name={name}
+          sidekick={sidekick}
+          onComplete={() => setScreen("boss")}
+          multiplayer={remote?.multiplayer}
+        />
       );
     case "boss":
       return <BossScreen onAnswer={() => setScreen("meme")} />;

@@ -5,6 +5,7 @@ or a dropped connection reconnects as the same player instead of creating a new 
 """
 from __future__ import annotations
 
+import asyncio
 import secrets
 import time
 from dataclasses import dataclass, field
@@ -39,6 +40,40 @@ class Player:
 
 
 @dataclass
+class VoteRound:
+    """The question currently put to the room. Who voted what stays on the server: the room only sees counts."""
+
+    round_id: int
+    level: int
+    closes_at: float  # epoch seconds
+    eligible: int
+    choices: dict[str, int] = field(default_factory=dict)  # player id -> option
+    result: Optional[dict] = None  # set when it closes: {counts, top, voters, participation}
+
+    @property
+    def open(self) -> bool:
+        return self.result is None
+
+    def counts(self) -> list[int]:
+        counts = [0, 0, 0, 0]
+        for option in self.choices.values():
+            counts[option] += 1
+        return counts
+
+    def public(self) -> dict:
+        return {
+            "roundId": self.round_id,
+            "level": self.level,
+            "open": self.open,
+            "closesAt": int(self.closes_at * 1000),
+            "counts": self.result["counts"] if self.result else self.counts(),
+            "voters": self.result["voters"] if self.result else len(self.choices),
+            "eligible": self.eligible,
+            "result": self.result,
+        }
+
+
+@dataclass
 class Room:
     code: str
     host_token: str
@@ -46,6 +81,11 @@ class Room:
     quiz: QuizState = field(default_factory=QuizState)
     players: dict[str, Player] = field(default_factory=dict)  # by player id
     created_at: float = field(default_factory=time.time)
+    vote: Optional[VoteRound] = None
+    lock: asyncio.Lock = field(default_factory=asyncio.Lock)  # votes and closing a round never interleave
+
+    def online_count(self) -> int:
+        return sum(p.online for p in self.players.values())
 
     def public(self) -> dict:
         """What every client may see. Never includes tokens."""
@@ -55,6 +95,8 @@ class Room:
             "quiz": self.quiz.to_json(),
             "players": [{"id": p.id, "name": p.name, "team": p.team, "online": p.online} for p in self.players.values()],
             "teams": list(TEAMS),
+            "vote": self.vote.public() if self.vote else None,
+            "serverNow": int(time.time() * 1000),  # lets phones line their countdown up with the server
         }
 
 

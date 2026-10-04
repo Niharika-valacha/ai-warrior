@@ -12,6 +12,15 @@ jobs:
     defaults:
       run:
         working-directory: api
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: aiwarrior
+          POSTGRES_PASSWORD: aiwarrior
+          POSTGRES_DB: aiwarrior_test
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U aiwarrior" --health-interval 2s --health-retries 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -22,6 +31,13 @@ jobs:
       - run: pip install -r requirements-dev.txt
       # No API keys in CI: every test uses the replay model or fakes, so nothing calls a paid service.
       - run: python -m unittest -v
+      - name: Migrate Postgres, then run the voting tests on it
+        env:
+          DATABASE_URL: postgresql+asyncpg://aiwarrior:aiwarrior@localhost:5432/aiwarrior_test
+          TEST_DATABASE_URL: postgresql+asyncpg://aiwarrior:aiwarrior@localhost:5432/aiwarrior_test
+        run: |
+          alembic upgrade head
+          python -m unittest -v test_store test_realtime
 
   web:
     name: Web tests, types and build
