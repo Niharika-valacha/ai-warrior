@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useContent } from "@/components/ContentProvider";
 import { clearSeat, joinRoom, loadSeat, saveSeat, useRoom, type RoomState, type Seat } from "@/lib/room";
+import { useCountdown } from "@/lib/useCountdown";
 
 const TEAMS = ["QA", "Frontend", "Backend", "Leadership"];
 const KEYS = ["A", "B", "C", "D"];
@@ -11,7 +12,7 @@ const KEYS = ["A", "B", "C", "D"];
 export function PlayerApp({ initialCode }: { initialCode: string }) {
   const [seat, setSeat] = useState<Seat | null>(null);
   const [notice, setNotice] = useState("");
-  const { room, connection } = useRoom(seat);
+  const { room, connection, vote, myVote, clockOffset } = useRoom(seat);
 
   // Coming back to the same room (refresh, locked screen, crashed tab) reuses your seat.
   useEffect(() => {
@@ -56,7 +57,7 @@ export function PlayerApp({ initialCode }: { initialCode: string }) {
       ) : room.status === "ended" ? (
         <p className="phone-wait">Game over. Thanks for playing! 🎉</p>
       ) : (
-        <LiveLevel room={room} />
+        <LiveLevel room={room} myVote={myVote} onVote={vote} clockOffset={clockOffset} />
       )}
     </main>
   );
@@ -145,22 +146,52 @@ function Waiting({ room }: { room: RoomState }) {
   );
 }
 
-/** Follows the big screen: the current incident, the question, and what just happened. */
-function LiveLevel({ room }: { room: RoomState }) {
+type VoteAck = { ok: boolean; error?: string };
+
+/** Follows the big screen: the incident and question, voting while it's open, then what happened. */
+function LiveLevel({
+  room,
+  myVote,
+  onVote,
+  clockOffset,
+}: {
+  room: RoomState;
+  myVote: { roundId: number; option: number } | null;
+  onVote: (roundId: number, option: number) => Promise<VoteAck>;
+  clockOffset: number;
+}) {
   const { levels } = useContent();
   const { lvl, phase, picked } = room.quiz;
   const level = levels[lvl];
   const correct = level.options.findIndex((o) => o.correct);
+  const vote = room.vote && room.vote.level === lvl ? room.vote : null;
+  const voting = Boolean(vote?.open) && phase === "ask";
+  const mine = vote && myVote?.roundId === vote.roundId ? myVote.option : null;
+  const left = useCountdown(voting && vote ? vote.closesAt : null, clockOffset);
+  const [error, setError] = useState("");
   const revealed = phase === "run" || phase === "learn" || phase === "retry";
 
-  const banner =
-    phase === "fail"
-      ? "💥 Wrong pick! Watch it break on the big screen."
-      : phase === "retry"
-        ? "One more try…"
-        : phase === "run" || phase === "learn"
-          ? `✅ ${level.block} added to the system`
-          : "What would you do? Shout it out!";
+  async function pick(option: number) {
+    if (!vote) return;
+    setError("");
+    const ack = await onVote(vote.roundId, option);
+    if (!ack.ok) setError(ack.error ?? "That vote didn't go through");
+  }
+
+  const you = mine === null ? "" : mine === correct ? " You got it right! 🎉" : ` You picked ${KEYS[mine]}.`;
+  const banner = voting
+    ? mine === null
+      ? `Tap your answer · ${left}s`
+      : `Locked in: ${KEYS[mine]} · you can change it for ${left}s`
+    : phase === "ask"
+      ? vote?.result && vote.result.top === null
+        ? "Nobody voted. The host will pick."
+        : "Get ready: the host is about to open the vote"
+      : phase === "fail"
+        ? `💥 The room picked ${KEYS[picked]}. Watch it break on the big screen!${you}`
+        : phase === "retry"
+          ? "One more try…"
+          : `✅ ${level.block} added to the system.${you}`;
 
   return (
     <div className="phone-level">
@@ -169,17 +200,36 @@ function LiveLevel({ room }: { room: RoomState }) {
       </p>
       <h2>{level.question}</h2>
       <ol className="phone-options">
-        {level.options.map((o, i) => (
-          <li
-            key={o.text}
-            className={i === picked && phase === "fail" ? "phone-wrong" : revealed && i === correct ? "phone-right" : ""}
-          >
-            <kbd>{KEYS[i]}</kbd>
-            <span>{o.text}</span>
-          </li>
-        ))}
+        {level.options.map((o, i) => {
+          const state =
+            voting && mine === i
+              ? "phone-mine"
+              : i === picked && phase === "fail"
+                ? "phone-wrong"
+                : revealed && i === correct
+                  ? "phone-right"
+                  : "";
+          return (
+            <li key={o.text} className={state}>
+              {voting ? (
+                <button className="phone-vote" onClick={() => pick(i)} aria-pressed={mine === i}>
+                  <kbd>{KEYS[i]}</kbd>
+                  <span>{o.text}</span>
+                </button>
+              ) : (
+                <>
+                  <kbd>{KEYS[i]}</kbd>
+                  <span>{o.text}</span>
+                </>
+              )}
+            </li>
+          );
+        })}
       </ol>
-      <p className={`phone-banner phone-banner-${phase}`}>{banner}</p>
+      {error && <p className="sq-error">{error}</p>}
+      <p className={`phone-banner phone-banner-${voting ? "voting" : phase}`} role="status">
+        {banner}
+      </p>
     </div>
   );
 }

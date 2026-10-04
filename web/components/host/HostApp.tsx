@@ -12,7 +12,7 @@ export function HostApp() {
   const [seat, setSeat] = useState<HostSeat | null>(null);
   const [error, setError] = useState("");
   const [presenter, setPresenter] = useState("");
-  const { room, connection, emit, hostAction } = useRoom(seat);
+  const { room, connection, emit, hostAction, clockOffset } = useRoom(seat);
 
   const openNewRoom = useCallback(async () => {
     setError("");
@@ -69,7 +69,20 @@ export function HostApp() {
   if (room.status === "playing") {
     return (
       <>
-        <Game remote={{ quiz: room.quiz, dispatch: hostAction }} startAt="briefing" initialName={presenter.trim() || "the host"} />
+        <Game
+          remote={{
+            quiz: room.quiz,
+            dispatch: hostAction,
+            multiplayer: {
+              vote: room.vote,
+              clockOffset,
+              openVote: () => emit("host:open_vote"),
+              closeVote: () => emit("host:close_vote"),
+            },
+          }}
+          startAt="briefing"
+          initialName={presenter.trim() || "the host"}
+        />
         <RoomBadge room={room} reconnecting={connection === "reconnecting"} />
       </>
     );
