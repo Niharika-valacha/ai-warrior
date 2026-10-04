@@ -3,7 +3,8 @@
     cd api && .venv/bin/python scripts/simulate_players.py --players 50
 
 Measures: time for everyone to join and connect, how fast a host action reaches every phone,
-and how fast dropped phones reconnect as the same players.
+how fast a whole room's votes are acknowledged and reach the big screen, and how fast dropped
+phones reconnect as the same players.
 """
 import argparse
 import statistics
@@ -86,7 +87,34 @@ def main():
     wait_until(lambda: all("fail" in p.seen_at for p in phones))
     fanout = sorted(p.seen_at["fail"] - sent for p in phones)
 
-    # 3. Drop some phones, then bring them back with the same tokens.
+    # 3. Everyone votes at the same moment. How fast is each vote acknowledged, and how long
+    #    until the big screen has counted all of them?
+    host.emit("host:action", {"type": "retry"})
+    host.emit("host:action", {"type": "pick", "option": 3})
+    host.emit("host:action", {"type": "learn"})
+    host.emit("host:action", {"type": "next"})  # level 1, a fresh question
+    wait_until(lambda: host_state["quiz"]["lvl"] == 1)
+    host.emit("host:open_vote")
+    wait_until(lambda: (host_state.get("vote") or {}).get("open"))
+    acks = []
+
+    def vote(phone, option):
+        t0 = time.perf_counter()
+        reply = phone.sio.call("vote", {"option": option}, timeout=10)
+        acks.append((time.perf_counter() - t0, reply.get("ok")))
+
+    voted_at = time.perf_counter()
+    threads = [threading.Thread(target=vote, args=(p, i % 4)) for i, p in enumerate(phones)]
+    for t in threads:
+        t.start()
+    wait_until(lambda: (host_state.get("vote") or {}).get("voters") == args.players)
+    all_counted = time.perf_counter() - voted_at
+    for t in threads:
+        t.join()
+    ack_times = sorted(a for a, _ in acks)
+    accepted = sum(1 for _, ok in acks if ok)
+
+    # 4. Drop some phones, then bring them back with the same tokens.
     dropped = phones[: args.drop]
     for p in dropped:
         p.sio.disconnect()
@@ -104,6 +132,8 @@ def main():
     print(f"\nRoom {code}: {args.players} simulated phones\n")
     print(f"  all joined and connected      {ms(join_time)}")
     print(f"  host action → every phone     p50 {ms(statistics.median(fanout))} · p95 {ms(fanout[int(len(fanout) * 0.95) - 1])} · max {ms(fanout[-1])}")
+    print(f"  vote acknowledged             p50 {ms(statistics.median(ack_times))} · p95 {ms(ack_times[int(len(ack_times) * 0.95) - 1])} · max {ms(ack_times[-1])}")
+    print(f"  all votes on the big screen   {ms(all_counted)}  ({accepted}/{args.players} accepted, {host_state['vote']['voters']} counted)")
     print(f"  reconnect after a drop        p50 {ms(statistics.median(reconnect_times))} · max {ms(max(reconnect_times))}")
     print(f"  reconnected as same players   {'yes' if same_players else 'NO'}  ({len(host_state['players'])} players in the room)\n")
 

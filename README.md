@@ -78,13 +78,15 @@ Everyone plays from their phone. The big screen runs the game; phones follow it 
 1. Start both servers (see below; the API needs `--host 0.0.0.0` so phones can reach it).
 2. Open `http://localhost:4000/host` on the big screen: a room opens with a QR code.
 3. People scan it (same Wi-Fi), enter a name and pick a team.
-4. Start the game. Every pick on the big screen shows up on every phone instantly, and a phone that drops or refreshes rejoins as the same player.
+4. Start the game and press `V` to open the vote. Everyone answers on their phone within 20 seconds (and can change their mind), while the big screen fills in live bars. Votes are anonymous: only counts are shown.
+5. When time is up, or everyone has voted, the room's pick plays out on the big screen. A phone that drops or refreshes rejoins as the same player, with its vote intact.
 
-Built on Socket.IO; the server owns the game state, and only the host can drive it. Tested with 50 simulated phones: every action reaches all of them in under 60 ms.
+Built on Socket.IO; the server owns the game state, and only the host can drive it. Votes are saved to Postgres, where the database itself makes double votes impossible. Tested with 50 simulated phones voting at once: all 50 votes reach the big screen in about 100 ms.
 
 | The big screen | A phone |
 |:---:|:---:|
 | <img src="screenshots/multiplayer-lobby.png" alt="Host lobby: QR code, room code and players by team" width="560"> | <img src="screenshots/multiplayer-phone.png" alt="A phone showing the live question with the wrong pick struck through" width="220"> |
+| <img src="screenshots/voting-host.png" alt="The big screen during a vote: 20-second timer, 2 of 3 voted, live bars" width="560"> | <img src="screenshots/voting-phone.png" alt="A phone with its vote locked in and the countdown" width="220"> |
 
 ## 🏗️ Under the hood
 
@@ -117,10 +119,14 @@ flowchart LR
 Requirements: Node 20+, Python 3.9+.
 
 ```bash
+# The database (optional: without Docker, a local SQLite file is used)
+docker compose up -d
+
 # The backend
 cd api
 python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 cp .env.example .env     # keys are optional: without them, the replay model and snapshots take over
+.venv/bin/alembic upgrade head   # with Postgres: create the tables (set DATABASE_URL in .env)
 .venv/bin/uvicorn main:app --host 0.0.0.0 --port 8400 --env-file .env
 
 # The game
